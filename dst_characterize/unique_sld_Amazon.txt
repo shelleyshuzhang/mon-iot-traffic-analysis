@@ -1,0 +1,7 @@
+amazon.com
+amazonvideo.com
+media-amazon.com
+amazon-dss.com
+elasticbeanstalk.com
+ntp-fireos.com
+amazonaws.com
