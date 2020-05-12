@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest/destination"
+software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
 current_location = "/Users/zhangshu/PycharmProjects/neu_mon-iot-_network_traffic_analysis"
 
 if __name__ == "__main__":
@@ -37,9 +37,9 @@ if __name__ == "__main__":
 
     input_csv_file = software_location + "/experiment.csv"
     all_finished = []
-    for s in session_list:
-        all_finished.append(s.poll())
-    while None in all_finished:
-        for s in session_list:
-            all_finished.append(s.poll())
+    # for s in session_list:
+    #     all_finished.append(s.poll())
+    # while None in all_finished:
+    #     for s in session_list:
+    #         all_finished.append(s.poll())
     run_extract_third_parties(input_csv_file=input_csv_file, company=company)
