@@ -16,8 +16,8 @@ party_index_dict = {"Physical": "-2", "Local": "-1",
                     "Unknown": "3"}
 
 
-def calculate_party_percentage(csv_filename: str, company: str):
-    with open(csv_filename + ".csv", mode="r") as csv_file1:
+def calculate_party_percentage(csv_filename: str, company: str, fig_dir: str):
+    with open(csv_filename, mode="r") as csv_file1:
         csv_reader = csv.DictReader(csv_file1)
 
         result = {"0": {}, "1": {}, "2": {}, "-1": {}}
@@ -41,11 +41,13 @@ def calculate_party_percentage(csv_filename: str, company: str):
                             title="The percentage of first, support and "
                                   "third parties in all destinations ("
                                   + company + " device/in bytes)",
-                            save_name="parties%_device" + company)
+                            save_name=fig_dir + "/" + company + "_device_parties.png")
 
         # write all the sld by party for the device
-        sld_file = open('all_sld_' + company, 'w+')
+        sld_filename = fig_dir + "/" + company + "_all_sld.txt"
+        sld_file = open(sld_filename, 'w+')
         write_hosts_by_party(party_dict=result, file=sld_file)
+        print("Second level domains written to \"" + sld_filename + "\"")
 
         # plot traffic sent by different parties
         for p in party_bar_dict:
@@ -53,8 +55,8 @@ def calculate_party_percentage(csv_filename: str, company: str):
             if result[index].__len__() != 0:
                 plot_traffic_dst(party_hosts_traffic=result,
                                  party_bar_plot=party_bar_dict[p],
-                                 save_name="traffic_parties%_" +
-                                           company + "_" + p.split()[0],
+                                 save_name=fig_dir + "/" + company + "_" 
+                                 + p.split()[0] + "_party_traffic.png",
                                  title="The percentage of traffic sent "
                                        "to each destination ("
                                        + company + " device/in bytes)")
@@ -84,7 +86,8 @@ def pie_plot_percentage(party_dict: dict, title, save_name):
     plt.title(title)
     plt.legend(labels, loc=3)
     plt.savefig(save_name)
-    plt.show()
+    print("Plot saved to \"" + save_name + "\"")
+    #plt.show()
 
 
 def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot):
@@ -186,5 +189,6 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     sub2.add_artist(con)
     con.set_linewidth(4)
 
-    current.savefig(save_name + ".png")
-    plt.show()
+    current.savefig(save_name)
+    print("Plot saved to \"" + save_name + "\"")
+    #plt.show()
