@@ -1,5 +1,6 @@
 import csv
 import re
+import os
 
 # github for adblock parser: https://github.com/scrapinghub/adblockparser
 # pip install adblockparser
@@ -18,17 +19,17 @@ party_dict = {"-2": "Physical", "-1": "Local",
 
 # find all the third parties in the list of pcap
 # files and write them to a txt file
-def run_extract_third_parties(input_csv_file, company='unknown'):
+def run_extract_third_parties(input_csv_file, script_dir, out_csv, company="unknown"):
     all_ads = set()
 
     # fina all the third parties using
     # the csv file we have
-    all_ads.union(find_third_party_using_given_csv(csv_file=input_csv_file))
+    all_ads.union(find_third_party_using_given_csv(input_csv_file, script_dir))
 
     # read each line from the input csv file
     result = {key: list() for key in options}
     max_host = ''
-    with open(file=input_csv_file + ".csv", mode='r', encoding='utf-8-sig') as input_file:
+    with open(file=input_csv_file, mode='r', encoding='utf-8-sig') as input_file:
         csv_reader = csv.DictReader(input_file)
         host_traffic_received = {}
         max_traffic = 0
@@ -64,7 +65,7 @@ def run_extract_third_parties(input_csv_file, company='unknown'):
     # for support party: (Cloud Computing Services AWS and
     # Google Cloud, Azure ...), CDN service, DNS service
     # for advertisers: from previous results and EasyList
-    file1 = open("./dst_characterize/general_ad_support_party" + '.txt', 'r')
+    file1 = open(script_dir + "/dst_characterize/general_ad_support_party.txt", 'r')
     current_party = ''
     for line in file1:
         party = line.split()[0]
@@ -73,20 +74,20 @@ def run_extract_third_parties(input_csv_file, company='unknown'):
             continue
         else:
             general_party_info[current_party].add(line.split("\n")[0])
+    
     general_party_info['2.5'].union(all_ads)
 
     # if the user does not provide the first party company,
     # then we assume it's whoever received the most traffic
-    if company == 'Unknown':
+    if company == 'unknown':
         company = max_host.split('.')[0]
-
+    
     host_list = result['host']
     if company in company_list:
         # add first party info and delete incorrect support party
         # (we only have data from device whose companies
         # are Amazon and Google for now)
-        general_party_info = read_party_info(filename='./dst_characterize/unique_sld_' + company,
-                                             party_info=general_party_info)
+        general_party_info = read_party_info(filename=script_dir + '/dst_characterize/unique_sld_' + company, party_info=general_party_info)
     # hosts that contain the first party name are
     # most likely (could be not accurate) the first parties
     for h in host_list:
@@ -109,7 +110,11 @@ def run_extract_third_parties(input_csv_file, company='unknown'):
             result['party'][index] = 'Third party'
         index += 1
 
-    with open(file='result.csv', mode='w') as result_csv_file:
+    out_csv_dir = os.path.dirname(out_csv)
+    if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
+        os.system("mkdir -pv " + out_csv_dir)
+
+    with open(file=out_csv, mode='w') as result_csv_file:
         fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
                       'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
                       'party', 'input_file', 'organization')
@@ -130,6 +135,8 @@ def run_extract_third_parties(input_csv_file, company='unknown'):
                              'input_file': result['input_file'][index],
                              'organization': result['organization'][index]})
             index += 1
+
+    print("Results written to \"" + out_csv + "\"")
 
 
 def detect_physical_host(host: str):
@@ -164,8 +171,8 @@ def read_party_info(filename, party_info):
     return party_info
 
 
-def find_third_party_using_given_csv(csv_file):
-    file = open('./dst_characterize/easylist_adblock.txt', 'r')
+def find_third_party_using_given_csv(csv_file, script_dir):
+    file = open(script_dir + '/dst_characterize/easylist_adblock.txt', 'r')
     filters = []
     for line in file:
         filters.append(line)
@@ -173,7 +180,7 @@ def find_third_party_using_given_csv(csv_file):
 
     ad_list = set()
 
-    with open(csv_file + ".csv", mode="r") as csv_file1:
+    with open(csv_file, mode="r") as csv_file1:
         csv_reader = csv.DictReader(csv_file1)
         for row in csv_reader:
             current_domain: str = row[options[3]]
