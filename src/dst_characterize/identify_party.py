@@ -98,10 +98,13 @@ def run_extract_third_parties(input_csv_file, company='unknown'):
         party = identify_party(host=host, party_info=general_party_info)
         if party != "no party":
             result['party'][index] = party_dict[party]
-        elif re.match(r"\d\d\d.\d\d\d.\d\d\d.\d\d\d", host):
+        # detect local traffic
+        elif detect_local_host(host):
             result['party'][index] = 'Local'
-        elif ":" in host:
+        # detect physical traffic
+        elif detect_physical_host(host):
             result['party'][index] = 'Physical'
+        # the left are third party
         else:
             result['party'][index] = 'Third party'
         index += 1
@@ -127,6 +130,22 @@ def run_extract_third_parties(input_csv_file, company='unknown'):
                              'input_file': result['input_file'][index],
                              'organization': result['organization'][index]})
             index += 1
+
+
+def detect_physical_host(host: str):
+    match_pattern = r'^[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$'
+    return re.search(match_pattern, host)
+
+
+def detect_local_host(host: str):
+    match_pattern = '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
+    match_pattern = '(' + match_pattern + '.)' + '{3}' + match_pattern
+    match_pattern = '^(' + match_pattern + ')$'
+    if "." in host:
+        host_list = host.split(".")
+        return host_list.__len__() == 4 and re.search(match_pattern, host)
+    else:
+        return False
 
 
 def identify_party(host, party_info):
