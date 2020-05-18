@@ -139,8 +139,9 @@ def run_extract_third_parties(input_csv_file, script_dir, out_csv, company="unkn
     print("Results written to \"" + out_csv + "\"")
 
 
+# for detect a valid mac address with separator ":" or "-"
 def detect_physical_host(host: str):
-    match_pattern = r'^[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$'
+    match_pattern = '^[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$'
     return re.search(match_pattern, host)
 
 
