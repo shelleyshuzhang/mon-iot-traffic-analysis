@@ -53,7 +53,7 @@ def dst_protocol_analysis(packets, d_mac, previous_info, protocol_file):
                                                         protocol_info[p_protocol])
             else:
                 current = DestinationPro.DestinationPro(dst_info[p_ip],
-                                                        ProtocolPort.ProtocolPort(protocol_port=protocol_info,
+                                                        ProtocolPort.ProtocolPort(protocol_port=p_protocol,
                                                                                   encrypted='-1',
                                                                                   expected='-1',
                                                                                   readable='-1',

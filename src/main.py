@@ -14,8 +14,9 @@ from protocol_analysis import visualization as vis_pro
 software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
 current_location = "/Users/zhangshu/PycharmProjects/neu_mon-iot-_network_traffic_analysis"
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
+protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port: 80": "Http"}
 
-num_proc = 1
+num_proc = 4
 devnull = open(os.devnull, "w")
 script_dir = os.path.dirname(sys.argv[0])
 if script_dir == "":
@@ -214,6 +215,9 @@ if __name__ == "__main__":
             p_snd = dp.p_snd
             p_rcv = dp.p_rcv
             encrypted = protocol_encrypted_dict[pro.encrypted]
+            protocol_p = pro.protocol_port
+            if protocol_p in protocol_details:
+                protocol_p = protocol_details[protocol_p]
             writer.writerow({'ip': dst.ip,
                              'host': dst.host,
                              'host_full': dst.host_full,
