@@ -8,7 +8,7 @@ party_name_dict = {"-1": "Local", "0": "First party",
                    "1": "Support party", "2": "Third party",
                    "2.5": "Advertisers", "3": "Analytics"}
 party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens",
-                    "-1": "Purples", "2.5": "Oranges", "3": "RdPu"}
+                    "-1": "Purples", "2.5": "Oranges", "3": "Greys"}
 party_bar_dict = {"0": "0",
                   "1": "1",
                   "2": "2",
@@ -78,7 +78,7 @@ def calculate_encrypted_dst_percentage(previous_data: list, company):
                       ylabel='Traffic in bytes',
                       title='Amount of unencrypted traffic sent '
                             'and received by each destination (' + company + ')',
-                      figure_name="Unencrypted_traffic_dst_" + company)
+                      figure_name="unencrypted_traffic_dst_" + company)
 
 
 def group_traffic(result: list):
@@ -166,8 +166,8 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
             total_traffic += dict_to_plot[name][value_name]
         values.append(total_traffic)
         colors.append(palette(col_index))
-        if col_index == 5:
-            col_index += 1
+        if col_index == 4:
+            col_index += 3
         col_index += 1
     values_copy = copy.deepcopy(values)
     values = np.array(values)

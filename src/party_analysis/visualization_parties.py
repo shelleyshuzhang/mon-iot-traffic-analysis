@@ -7,7 +7,7 @@ party_name_dict = {"-1": "Local", "0": "First party",
                    "1": "Support party", "2": "Third party",
                    "2.5": "Advertiser", "3": "Analytics"}
 party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens",
-                    "3": "Purples", "4": "Oranges", "5": "RdPu"}
+                    "3": "Purples", "4": "Oranges", "5": "Greys"}
 party_bar_dict = {"First party": "0",
                   "Support party": "1",
                   "Third party": "2",
@@ -113,8 +113,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
             total_traffic += party_hosts_traffic[party][host]
         values.append(total_traffic)
         colors.append(palette(col_index))
-        if col_index == 5:
-            col_index += 1
+        if col_index == 4:
+            col_index += 3
         col_index += 1
     values = np.array(values)
     labels = np.char.array(labels)
