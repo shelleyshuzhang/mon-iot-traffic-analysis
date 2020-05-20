@@ -1,6 +1,5 @@
 import csv
 import re
-import os
 
 # github for adblock parser: https://github.com/scrapinghub/adblockparser
 # pip install adblockparser
@@ -14,12 +13,12 @@ company_list = ['amazon', 'google']
 party_dict = {"-2": "Physical", "-1": "Local",
               "0": "First party", "1": "Support party",
               "2": "Third party", "2.5": "Advertisers",
-              "3": "Unknown"}
+              "3": "Analytics"}
 
 
 # find all the third parties in the list of pcap
 # files and write them to a txt file
-def run_extract_third_parties(input_csv_file, script_dir, out_csv, company="unknown"):
+def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
     all_ads = set()
 
     # fina all the third parties using
@@ -38,6 +37,7 @@ def run_extract_third_parties(input_csv_file, script_dir, out_csv, company="unkn
             # get the host that received the most traffic
             host = row['host']
             traffic_rcv = int(row['traffic_rcv'])
+            total_t: int
             if host in host_traffic_received:
                 total_t = host_traffic_received[host] + traffic_rcv
             else:
@@ -65,29 +65,32 @@ def run_extract_third_parties(input_csv_file, script_dir, out_csv, company="unkn
     # for support party: (Cloud Computing Services AWS and
     # Google Cloud, Azure ...), CDN service, DNS service
     # for advertisers: from previous results and EasyList
+    # for analytics: data analytics
     file1 = open(script_dir + "/dst_characterize/general_ad_support_party.txt", 'r')
     current_party = ''
     for line in file1:
         party = line.split()[0]
-        if party in ['1', '2.5']:
+        if party in ['1', '2.5', '3']:
             current_party = party
             continue
         else:
             general_party_info[current_party].add(line.split("\n")[0])
-    
+
     general_party_info['2.5'].union(all_ads)
 
     # if the user does not provide the first party company,
     # then we assume it's whoever received the most traffic
     if company == 'unknown':
         company = max_host.split('.')[0]
-    
+
     host_list = result['host']
-    if company in company_list:
-        # add first party info and delete incorrect support party
-        # (we only have data from device whose companies
-        # are Amazon and Google for now)
-        general_party_info = read_party_info(filename=script_dir + '/dst_characterize/unique_sld_' + company, party_info=general_party_info)
+    for c in company_list:
+        if c in company:
+            # add first party info and delete incorrect support party
+            # (we only have data from device whose companies
+            # are Amazon and Google for now)
+            general_party_info = read_party_info(filename=script_dir + '/dst_characterize/unique_sld_' + c,
+                                                 party_info=general_party_info)
     # hosts that contain the first party name are
     # most likely (could be not accurate) the first parties
     for h in host_list:
@@ -110,41 +113,16 @@ def run_extract_third_parties(input_csv_file, script_dir, out_csv, company="unkn
             result['party'][index] = 'Third party'
         index += 1
 
-    out_csv_dir = os.path.dirname(out_csv)
-    if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
-        os.system("mkdir -pv " + out_csv_dir)
-
-    with open(file=out_csv, mode='w') as result_csv_file:
-        fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
-                      'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
-                      'party', 'input_file', 'organization')
-        writer = csv.DictWriter(result_csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        total_num = result['ip'].__len__()
-        index = 0
-        while index < total_num:
-            writer.writerow({'ip': result['ip'][index],
-                             'host': result['host'][index],
-                             'host_full': result['host_full'][index],
-                             'traffic_snd': result['traffic_snd'][index],
-                             'traffic_rcv': result['traffic_rcv'][index],
-                             'packet_snd': result['packet_snd'][index],
-                             'packet_rcv': result['packet_rcv'][index],
-                             'country': result['country'][index],
-                             'party': result['party'][index],
-                             'input_file': result['input_file'][index],
-                             'organization': result['organization'][index]})
-            index += 1
-
-    print("Results written to \"" + out_csv + "\"")
+    return result
 
 
-# for detect a valid mac address with separator ":" or "-"
+# for detect a valid mac address, must use separator ":" or "-"
 def detect_physical_host(host: str):
     match_pattern = '^[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$'
-    return re.search(match_pattern, host)
+    return re.search(match_pattern, host.lower())
 
 
+# for detecting IPv4
 def detect_local_host(host: str):
     match_pattern = '([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])'
     match_pattern = '(' + match_pattern + '.)' + '{3}' + match_pattern

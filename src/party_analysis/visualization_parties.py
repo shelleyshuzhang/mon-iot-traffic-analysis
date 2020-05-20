@@ -4,23 +4,27 @@ import csv
 import numpy as np
 
 party_name_dict = {"-1": "Local", "0": "First party",
-                   "1": "Support party", "2": "Third party"}
-party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens", "3": "Purples"}
+                   "1": "Support party", "2": "Third party",
+                   "2.5": "Advertiser", "3": "Analytics"}
+party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens",
+                    "3": "Purples", "4": "Oranges", "5": "RdPu"}
 party_bar_dict = {"First party": "0",
                   "Support party": "1",
                   "Third party": "2",
-                  "Local": "3"}
+                  "Local": "3",
+                  "Advertisers": "4",
+                  "Analytics": "5"}
 party_index_dict = {"Physical": "-2", "Local": "-1",
                     "First party": "0", "Support party": "1",
                     "Third party": "2", "Advertisers": "2.5",
-                    "Unknown": "3"}
+                    "Analytics": "3"}
 
 
 def calculate_party_percentage(csv_filename: str, company: str, fig_dir: str):
     with open(csv_filename, mode="r") as csv_file1:
         csv_reader = csv.DictReader(csv_file1)
 
-        result = {"0": {}, "1": {}, "2": {}, "-1": {}}
+        result = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
         for row in csv_reader:
             current_domain_sld: str = row['host']
             current_party = row['party']
@@ -28,9 +32,6 @@ def calculate_party_percentage(csv_filename: str, company: str, fig_dir: str):
             size = int(row['packet_rcv'])
 
             if current_party != "-2":
-                if current_party == "2.5":
-                    current_domain_sld = "advertiser"
-                    current_party = "2"
                 if current_domain_sld in result[current_party]:
                     result[current_party][current_domain_sld] += size
                 else:
@@ -79,6 +80,8 @@ def pie_plot_percentage(party_dict: dict, title, save_name):
     for party in party_dict:
         labels.append(party_name_dict[party])
         values.append(party_dict[party].__len__())
+        if index == 4:
+            index += 1
         colors.append(palette(index))
         index += 1
     plt.pie(values, colors=colors, labels=values, autopct='%1.1f%%',
@@ -110,6 +113,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
             total_traffic += party_hosts_traffic[party][host]
         values.append(total_traffic)
         colors.append(palette(col_index))
+        if col_index == 4:
+            col_index += 1
         col_index += 1
     values = np.array(values)
     labels = np.char.array(labels)
@@ -132,6 +137,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     this_party = party_bar_plot
     if party_bar_plot == "3":
         this_party = "-1"
+    elif party_bar_plot == "4":
+        this_party = "2.5"
     try:
         for sub_name in party_hosts_traffic[this_party]:
             values_sub1.append(float(party_hosts_traffic[this_party][sub_name])

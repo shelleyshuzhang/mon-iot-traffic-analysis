@@ -1,50 +1,40 @@
 import copy
-
 import matplotlib.pyplot as plt
-from matplotlib.patches import ConnectionPatch
-import csv
 import numpy as np
 
-from scapy.layers.inet import IP
-from scapy.utils import rdpcap
+from matplotlib.patches import ConnectionPatch
 
-from Source.protocol_analysis.Destination import Destination
-from Source.protocol_analysis.DestinationPro import DestinationPro
-from Source.protocol_analysis.ProtocolPort import ProtocolPort
+party_name_dict = {"-1": "Local", "0": "First party",
+                   "1": "Support party", "2": "Third party",
+                   "2.5": "Advertisers", "3": "Analytics"}
+party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens",
+                    "3": "Purples", "4": "Oranges", "5": "RdPu"}
+party_bar_dict = {"0": "0",
+                  "1": "1",
+                  "2": "2",
+                  "-1": "3",
+                  "2.5": "4",
+                  "3": "5"}
 
-options = ('ip', 'host', 'party', 'protocol&port',
-           'encrypted', 'well-known', 'human-readable',
-           'snd', 'rcv', 'importance')
-party_name_dict = {"0": "First party", "1": "Support party",
-                   "2": "Third party", "-1": "Non-internet"}
-protocol_known_dict = {"1": "well-known", "0": "unknown", "0.5": "registered"}
+protocol_known_dict = {"1": "well-known", "-1": "unknown", "0.5": "registered"}
 protocol_readable_dict = {"1": "human-readable", "0": "human-unreadable",
-                          "0.5": "partially human-readable"}
+                          "0.5": "partially human-readable", "-1": "unknown"}
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
-protocol_importance_dict = {"1": "important", "0": "unimportant"}
-
-######################################
-company = 'Google'
-
-# for google
-device_ip = "192.168.110.16"
-# for amazon
-# device_ip = "192.168.110.14"
-
-third_party_color_1 = 'Greens'
-third_party_color_2 = 'Greens'
-csv_file = "./protocol_analysis/dst_pros_google.csv"
+protocol_importance_dict = {"1": "important", "0": "unimportant", "-1": "unknown"}
+protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port: 80": "Http"}
 
 
-def run():
-    calculate_encrypted_dst_percentage(csv_file)
+# the result is a list of DestinationPro
+def run(result: list, company):
+    calculate_encrypted_dst_percentage(previous_data=result,
+                                       company=company)
 
 
-def calculate_encrypted_dst_percentage(csv_filename: str):
+def calculate_encrypted_dst_percentage(previous_data: list, company):
     encryption_dict, \
     party_dict_encrypted, \
     party_dict_unencrypted, \
-    traffic_dst_unencrypted = group_traffic(csv_filename=csv_filename)
+    traffic_dst_unencrypted = group_traffic(previous_data)
 
     # plot the percentage of encrypted and unencrypted traffic
     pie_plot_percentage(dict_to_plot=encryption_dict,
@@ -54,27 +44,21 @@ def calculate_encrypted_dst_percentage(csv_filename: str):
                         figure_name="traffic_encryption%_" + company,
                         name_dict=protocol_encrypted_dict)
 
-    # plot the percentage of unencrypted/encrypted traffic sent to each dst and party
-    plot_pie_bar_percentage(dict_to_plot=party_dict_encrypted,
-                            title="Total amount of encrypted traffic sent to each "
-                                  "party and destination by the " + company
-                                  + " device (Bytes)",
-                            figure_name='encrypted_party%_' + company,
-                            name_dict=party_name_dict,
-                            party_bar_plot="2",
-                            position="2",
-                            third_party_color=third_party_color_1)
-    plot_pie_bar_percentage(dict_to_plot=party_dict_unencrypted,
-                            title="Total amount of unencrypted traffic sent to each "
-                                  "party and destination by the " + company
-                                  + " device (Bytes)",
-                            figure_name='unencrypted_party%_' + company,
-                            name_dict=party_name_dict,
-                            party_bar_plot="2",
-                            position="2",
-                            third_party_color=third_party_color_2)
+    # plot the percentage of unencrypted traffic sent to each dst and party
+    for p in party_dict_unencrypted:
+        if party_dict_unencrypted[p].__len__() != 0:
+            plot_pie_bar_percentage(dict_to_plot=party_dict_unencrypted,
+                                    title="Total amount of unencrypted traffic sent to each "
+                                          "party and destination by the " + company
+                                          + " device (Bytes)",
+                                    figure_name='unencrypted%_' + company + "_" + party_name_dict[p],
+                                    name_dict=party_name_dict,
+                                    party_bar_plot=p,
+                                    position=party_bar_dict[p],
+                                    third_party_color=party_color_dict[p])
 
-    #
+    # show the amount of unencrypted traffic sent and received
+    # to each destination
     means1 = []
     means2 = []
     for dst in traffic_dst_unencrypted:
@@ -93,21 +77,18 @@ def calculate_encrypted_dst_percentage(csv_filename: str):
                       figure_name="Unencrypted_traffic_dst_" + company)
 
 
-def group_traffic(csv_filename):
-    dst_pros = list(get_dst_pros(csv_filename=csv_filename))
-    party_dict_encrypted = {"0": {}, "1": {}, "2": {}, "-1": {}}
-    party_dict_unencrypted = {"0": {}, "1": {}, "2": {}, "-1": {}}
+def group_traffic(result: list):
+    dst_pros = result
+    party_dict_encrypted = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
+    party_dict_unencrypted = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
     traffic_encrypted_unencrypted = {}
     traffic_dst_unencrypted = {}
 
     for dst_pro in dst_pros:
-        party = dst_pro.host.party
+        party = party_name_dict[dst_pro.host.party]
         host = dst_pro.host.host
         traffic = dst_pro.rcv
         traffic_snd = dst_pro.snd
-        if party == "2.5":
-            host = "advertisers"
-            party = "2"
         encrypt = dst_pro.protocol_port.encrypted
         if encrypt in traffic_encrypted_unencrypted:
             traffic_encrypted_unencrypted[encrypt] += traffic
@@ -136,33 +117,6 @@ def group_traffic(csv_filename):
            party_dict_encrypted, \
            party_dict_unencrypted, \
            traffic_dst_unencrypted
-
-
-def get_dst_pros(csv_filename):
-    with open(csv_filename, mode="r") as csv_file1:
-        csv_reader = csv.DictReader(csv_file1)
-
-        for row in csv_reader:
-            host_name = row['host']
-            current_ip = row['ip']
-            party = row['party']
-            protocol_port = row['protocol&port']
-            traffic_snd = row['snd']
-            traffic_rcv = row['rcv']
-            well_known = row['well-known']
-            readable = row['human-readable']
-            encrypted = row['encrypted']
-            importance = row['importance']
-            dst = Destination(host=host_name, ip=current_ip, party=party)
-            protocol = ProtocolPort(protocol_port=protocol_port,
-                                    encrypted=encrypted,
-                                    expected=well_known,
-                                    readable=readable,
-                                    importance=importance)
-            dst_pro = DestinationPro(dst=dst, pro_port=protocol)
-            dst_pro.add_snd(traffic_snd)
-            dst_pro.add_rcv(traffic_rcv)
-            yield dst_pro
 
 
 # plot the value in percentage for the given value dict

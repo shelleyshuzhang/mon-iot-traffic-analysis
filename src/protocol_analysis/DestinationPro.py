@@ -5,6 +5,8 @@ class DestinationPro(object):
         self.protocol_port = pro_port
         self.snd = 0
         self.rcv = 0
+        self.p_snd = 0
+        self.p_rcv = 0
 
     def __eq__(self, other):
         return isinstance(other, DestinationPro) \
@@ -19,3 +21,9 @@ class DestinationPro(object):
 
     def add_rcv(self, traffic):
         self.rcv += int(traffic)
+
+    def add_ps(self, pak_num):
+        self.p_snd += int(pak_num)
+
+    def add_pr(self, pak_num):
+        self.p_rcv += int(pak_num)
