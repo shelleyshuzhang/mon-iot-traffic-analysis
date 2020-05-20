@@ -1,0 +1,14 @@
+﻿Protocol&port,Well-known,Human-readable,Encrypted,Importance
+ICMP,1,0,0,0
+DHCP port: 68,1,0.5,0,0
+TCP port: 80,1,1,0,1
+DHCP port: 67,1,0.5,0,0
+TCP port: 443,1,0,1,1
+DNS port: 53,1,1,0,1
+NTPHeader port: 123,1,0,1,1
+DNS port: 5353,0.5,1,0,1
+UDP port: 1900,0.5,1,0,1
+TCP port: 11095,0,0.5,-1,1
+TCP port: 5228,0.5,0.5,-1,1
+TCP port: 22790,0,0.5,-1,1
+IGMPv3,1,1,0,0
