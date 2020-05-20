@@ -8,13 +8,17 @@ party_name_dict = {"-1": "Local", "0": "First party",
                    "1": "Support party", "2": "Third party",
                    "2.5": "Advertisers", "3": "Analytics"}
 party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens",
-                    "3": "Purples", "4": "Oranges", "5": "RdPu"}
+                    "-1": "Purples", "2.5": "Oranges", "3": "RdPu"}
 party_bar_dict = {"0": "0",
                   "1": "1",
                   "2": "2",
                   "-1": "3",
                   "2.5": "4",
                   "3": "5"}
+party_index_dict = {"Physical": "-2", "Local": "-1",
+                    "First party": "0", "Support party": "1",
+                    "Third party": "2", "Advertisers": "2.5",
+                    "Analytics": "3"}
 
 protocol_known_dict = {"1": "well-known", "-1": "unknown", "0.5": "registered"}
 protocol_readable_dict = {"1": "human-readable", "0": "human-unreadable",
@@ -85,7 +89,7 @@ def group_traffic(result: list):
     traffic_dst_unencrypted = {}
 
     for dst_pro in dst_pros:
-        party = party_name_dict[dst_pro.host.party]
+        party = party_index_dict[dst_pro.host.party]
         host = dst_pro.host.host
         traffic = dst_pro.rcv
         traffic_snd = dst_pro.snd
@@ -162,6 +166,8 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
             total_traffic += dict_to_plot[name][value_name]
         values.append(total_traffic)
         colors.append(palette(col_index))
+        if col_index == 5:
+            col_index += 1
         col_index += 1
     values_copy = copy.deepcopy(values)
     values = np.array(values)

@@ -213,6 +213,7 @@ if __name__ == "__main__":
             received = dp.rcv
             p_snd = dp.p_snd
             p_rcv = dp.p_rcv
+            encrypted = protocol_encrypted_dict[pro.encrypted]
             writer.writerow({'ip': dst.ip,
                              'host': dst.host,
                              'host_full': dst.host_full,
@@ -224,8 +225,8 @@ if __name__ == "__main__":
                              'party': dst.party,
                              'organization': dst.organization,
                              'protocol&port': pro.protocol_port,
-                             'encryption': protocol_encrypted_dict[pro.encrypted]})
-            out_csv.close()
+                             'encryption': encrypted})
+        result_csv_file.close()
 
     # analyze the percentage of each party in all hosts and the amount of traffic
     # sent to each party, and generate the plots

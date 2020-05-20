@@ -113,7 +113,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
             total_traffic += party_hosts_traffic[party][host]
         values.append(total_traffic)
         colors.append(palette(col_index))
-        if col_index == 4:
+        if col_index == 5:
             col_index += 1
         col_index += 1
     values = np.array(values)
