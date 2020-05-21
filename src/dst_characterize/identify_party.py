@@ -129,8 +129,9 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
                 if company in org.lower():
                     result['organization'][index] = company_name_dict[company]
                 # if the org is empty, use the sld
-                elif org == "" or org == " " or org.lower() == "n/a":
-                    result['organization'][index] = host.split()[0]
+                elif org == "" or org == " " or org.lower() == "n/a" \
+                        or org.lower() == "registrant":
+                    result['organization'][index] = host.split(".")[0]
                 # else, use the org
                 else:
                     result['organization'][index] = org
