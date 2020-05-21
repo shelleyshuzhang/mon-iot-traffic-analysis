@@ -1,9 +1,11 @@
 class Destination(object):
-
-    def __init__(self, ip, host, party):
+    def __init__(self, ip, host, party, host_full, country, org):
         self.ip = ip
         self.host = host
         self.party = party
+        self.host_full = host_full
+        self.country = country
+        self.organization = org
 
     def __eq__(self, other):
         return isinstance(other, Destination) \

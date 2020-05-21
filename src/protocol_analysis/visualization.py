@@ -1,80 +1,69 @@
 import copy
-
 import matplotlib.pyplot as plt
-from matplotlib.patches import ConnectionPatch
-import csv
 import numpy as np
 
-from scapy.layers.inet import IP
-from scapy.utils import rdpcap
+from matplotlib.patches import ConnectionPatch
 
-from Source.protocol_analysis.Destination import Destination
-from Source.protocol_analysis.DestinationPro import DestinationPro
-from Source.protocol_analysis.ProtocolPort import ProtocolPort
+party_name_dict = {"-1": "Local", "0": "First party",
+                   "1": "Support party", "2": "Third party",
+                   "2.5": "Advertisers", "3": "Analytics"}
+party_color_dict = {"0": 'Reds', "1": 'Blues', "2": "Greens",
+                    "-1": "Purples", "2.5": "Oranges", "3": "Greys"}
+party_bar_dict = {"0": "0",
+                  "1": "1",
+                  "2": "2",
+                  "-1": "3",
+                  "2.5": "4",
+                  "3": "5"}
+party_index_dict = {"Physical": "-2", "Local": "-1",
+                    "First party": "0", "Support party": "1",
+                    "Third party": "2", "Advertisers": "2.5",
+                    "Analytics": "3"}
 
-options = ('ip', 'host', 'party', 'protocol&port',
-           'encrypted', 'well-known', 'human-readable',
-           'snd', 'rcv', 'importance')
-party_name_dict = {"0": "First party", "1": "Support party",
-                   "2": "Third party", "-1": "Non-internet"}
-protocol_known_dict = {"1": "well-known", "0": "unknown", "0.5": "registered"}
+protocol_known_dict = {"1": "well-known", "-1": "unknown", "0.5": "registered"}
 protocol_readable_dict = {"1": "human-readable", "0": "human-unreadable",
-                          "0.5": "partially human-readable"}
+                          "0.5": "partially human-readable", "-1": "unknown"}
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
-protocol_importance_dict = {"1": "important", "0": "unimportant"}
-
-######################################
-company = 'Google'
-
-# for google
-device_ip = "192.168.110.16"
-# for amazon
-# device_ip = "192.168.110.14"
-
-third_party_color_1 = 'Greens'
-third_party_color_2 = 'Greens'
-csv_file = "./protocol_analysis/dst_pros_google.csv"
+protocol_importance_dict = {"1": "important", "0": "unimportant", "-1": "unknown"}
+protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port: 80": "Http"}
 
 
-def run():
-    calculate_encrypted_dst_percentage(csv_file)
+# the result is a list of DestinationPro
+def run(result: list, company, fig_dir):
+    calculate_encrypted_dst_percentage(previous_data=result,
+                                       company=company, fig_dir=fig_dir)
 
 
-def calculate_encrypted_dst_percentage(csv_filename: str):
+def calculate_encrypted_dst_percentage(previous_data: list, company, fig_dir):
     encryption_dict, \
     party_dict_encrypted, \
     party_dict_unencrypted, \
-    traffic_dst_unencrypted = group_traffic(csv_filename=csv_filename)
+    traffic_dst_unencrypted = group_traffic(previous_data)
 
     # plot the percentage of encrypted and unencrypted traffic
     pie_plot_percentage(dict_to_plot=encryption_dict,
                         title='Total amount of encrypted and unencrypted '
                               'traffic sent by the ' + company
                               + " device (Bytes)",
-                        figure_name="traffic_encryption%_" + company,
+                        figure_name=fig_dir + "/" + company + "_traffic_encryption.png",
                         name_dict=protocol_encrypted_dict)
 
-    # plot the percentage of unencrypted/encrypted traffic sent to each dst and party
-    plot_pie_bar_percentage(dict_to_plot=party_dict_encrypted,
-                            title="Total amount of encrypted traffic sent to each "
-                                  "party and destination by the " + company
-                                  + " device (Bytes)",
-                            figure_name='encrypted_party%_' + company,
-                            name_dict=party_name_dict,
-                            party_bar_plot="2",
-                            position="2",
-                            third_party_color=third_party_color_1)
-    plot_pie_bar_percentage(dict_to_plot=party_dict_unencrypted,
-                            title="Total amount of unencrypted traffic sent to each "
-                                  "party and destination by the " + company
-                                  + " device (Bytes)",
-                            figure_name='unencrypted_party%_' + company,
-                            name_dict=party_name_dict,
-                            party_bar_plot="2",
-                            position="2",
-                            third_party_color=third_party_color_2)
+    # plot the percentage of unencrypted traffic sent to each dst and party
+    for p in party_dict_unencrypted:
+        if party_dict_unencrypted[p].__len__() != 0:
+            plot_pie_bar_percentage(dict_to_plot=party_dict_unencrypted,
+                                    title="Total amount of unencrypted traffic sent to each "
+                                          "party and destination by the " + company
+                                          + " device (Bytes)",
+                                    figure_name=fig_dir + "/" + company + '_unencrypted_'
+                                                + party_name_dict[p].replace(" ", "_") + ".png",
+                                    name_dict=party_name_dict,
+                                    party_bar_plot=p,
+                                    position=party_bar_dict[p],
+                                    third_party_color=party_color_dict[p])
 
-    #
+    # show the amount of unencrypted traffic sent and received
+    # to each destination
     means1 = []
     means2 = []
     for dst in traffic_dst_unencrypted:
@@ -82,32 +71,30 @@ def calculate_encrypted_dst_percentage(csv_filename: str):
         t_rcv = traffic_dst_unencrypted[dst][1]
         means1.append(t_snd)
         means2.append(t_rcv)
-    plot_grouped_bars(means1=means1,
-                      means2=means2,
-                      xlabels=traffic_dst_unencrypted.keys(),
-                      name1='traffic_snd',
-                      name2='traffic_rcv',
-                      ylabel='Traffic in bytes',
-                      title='Amount of unencrypted traffic sent '
-                            'and received by each destination (' + company + ')',
-                      figure_name="Unencrypted_traffic_dst_" + company)
+    if means1.__len__() != 0 or means2.__len__() != 0:
+        plot_grouped_bars(means1=means1,
+                          means2=means2,
+                          xlabels=traffic_dst_unencrypted.keys(),
+                          name1='traffic_snd',
+                          name2='traffic_rcv',
+                          ylabel='Traffic in bytes',
+                          title='Amount of unencrypted traffic sent '
+                                'and received by each destination (' + company + ')',
+                          figure_name=fig_dir + "/" + company + "_unencrypted_traffic_dst.png")
 
 
-def group_traffic(csv_filename):
-    dst_pros = list(get_dst_pros(csv_filename=csv_filename))
-    party_dict_encrypted = {"0": {}, "1": {}, "2": {}, "-1": {}}
-    party_dict_unencrypted = {"0": {}, "1": {}, "2": {}, "-1": {}}
+def group_traffic(result: list):
+    dst_pros = result
+    party_dict_encrypted = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
+    party_dict_unencrypted = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
     traffic_encrypted_unencrypted = {}
     traffic_dst_unencrypted = {}
 
     for dst_pro in dst_pros:
-        party = dst_pro.host.party
+        party = party_index_dict[dst_pro.host.party]
         host = dst_pro.host.host
         traffic = dst_pro.rcv
         traffic_snd = dst_pro.snd
-        if party == "2.5":
-            host = "advertisers"
-            party = "2"
         encrypt = dst_pro.protocol_port.encrypted
         if encrypt in traffic_encrypted_unencrypted:
             traffic_encrypted_unencrypted[encrypt] += traffic
@@ -138,31 +125,18 @@ def group_traffic(csv_filename):
            traffic_dst_unencrypted
 
 
-def get_dst_pros(csv_filename):
-    with open(csv_filename, mode="r") as csv_file1:
-        csv_reader = csv.DictReader(csv_file1)
-
-        for row in csv_reader:
-            host_name = row['host']
-            current_ip = row['ip']
-            party = row['party']
-            protocol_port = row['protocol&port']
-            traffic_snd = row['snd']
-            traffic_rcv = row['rcv']
-            well_known = row['well-known']
-            readable = row['human-readable']
-            encrypted = row['encrypted']
-            importance = row['importance']
-            dst = Destination(host=host_name, ip=current_ip, party=party)
-            protocol = ProtocolPort(protocol_port=protocol_port,
-                                    encrypted=encrypted,
-                                    expected=well_known,
-                                    readable=readable,
-                                    importance=importance)
-            dst_pro = DestinationPro(dst=dst, pro_port=protocol)
-            dst_pro.add_snd(traffic_snd)
-            dst_pro.add_rcv(traffic_rcv)
-            yield dst_pro
+# use the proper units for large traffic
+def network_traffic_units(traffic_num: int):
+    if traffic_num < 1024:
+        return str(traffic_num) + " Bytes"
+    elif 1024 <= traffic_num < 1048576:
+        return str(round(traffic_num / 1024, 2)) + " KB"
+    elif 1048576 <= traffic_num < 1073741824:
+        return str(round(traffic_num / 1048576, 2)) + " MB"
+    elif 1073741824 <= traffic_num < 1099511627776:
+        return str(round(traffic_num / 1073741824, 2)) + " GB"
+    else:
+        return str(round(traffic_num / 1099511627776, 2)) + " TB"
 
 
 # plot the value in percentage for the given value dict
@@ -172,18 +146,23 @@ def pie_plot_percentage(dict_to_plot: dict, title, figure_name, name_dict):
     labels = []
     values = []
     colors = []
+    num_labels = []
     index = 0
     for name in dict_to_plot:
         labels.append(name_dict[name])
         values.append(dict_to_plot[name])
         colors.append(palette(index))
+        num_label = network_traffic_units(dict_to_plot[name])
+        num_labels.append(num_label)
         index += 1
-    plt.pie(values, colors=colors, labels=values, autopct='%1.1f%%',
-            counterclock=False, shadow=True)
+    plt.pie(values, colors=colors, labels=num_labels,
+            autopct='%1.1f%%', counterclock=False,
+            shadow=True)
     plt.title(title)
     plt.legend(labels, loc=3)
-    plt.savefig(figure_name + ".png")
-    plt.show()
+    plt.savefig(figure_name)
+    print("    Plot saved to \"" + figure_name + "\"")
+    # plt.show()
 
 
 def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
@@ -200,6 +179,7 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
     labels = []
     values = []
     colors = []
+    num_labels = []
     col_index = 0
     for name in dict_to_plot:
         labels.append(name_dict[name])
@@ -208,12 +188,15 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
             total_traffic += dict_to_plot[name][value_name]
         values.append(total_traffic)
         colors.append(palette(col_index))
+        num_label = network_traffic_units(total_traffic)
+        num_labels.append(num_label)
+        if col_index == 4:
+            col_index += 3
         col_index += 1
-    values_copy = copy.deepcopy(values)
     values = np.array(values)
     labels = np.char.array(labels)
     por_cent = 100. * values / values.sum()
-    patches, texts = sub1.pie(values, labels=values_copy, colors=colors,
+    patches, texts = sub1.pie(values, labels=num_labels, colors=colors,
                               counterclock=False, shadow=True, radius=1)
     labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, por_cent)]
     sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(-0.1, 1.))
@@ -282,8 +265,9 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
     sub2.add_artist(con)
     con.set_linewidth(4)
 
-    current.savefig(figure_name + ".png")
-    plt.show()
+    current.savefig(figure_name)
+    print("    Plot saved to \"" + figure_name + "\"")
+    #plt.show()
 
 
 def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figure_name):
@@ -305,7 +289,8 @@ def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figu
         """Attach a text label above each bar in *rects*, displaying its height."""
         for rect in rects:
             height = rect.get_height()
-            ax.annotate('{}'.format(height),
+            height_label = network_traffic_units(height)
+            ax.annotate('{}'.format(height_label),
                         xy=(rect.get_x() + rect.get_width() / 2, height),
                         xytext=(0, 3),  # 3 points vertical offset
                         textcoords="offset points",
@@ -316,5 +301,6 @@ def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figu
 
     fig.tight_layout()
 
-    plt.savefig(figure_name + ".png")
-    plt.show()
+    plt.savefig(figure_name)
+    print("    Plot saved to \"" + figure_name + "\"")
+    #plt.show()
