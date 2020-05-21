@@ -212,7 +212,7 @@ if __name__ == "__main__":
             f.write("device,ip,host,host_full,traffic_snd,traffic_rcv,packet_snd,packet_rcv,"
                 "country,party,lab,experiment,network,input_file,organization\n")
     
-    #run analyze.py with num_proc processes
+    # run analyze.py with num_proc processes
     for files in raw_files:
         p = Process(target=run_dest_pipeline, args=(files, mac, tmp_csv))
         procs.append(p)
@@ -273,7 +273,6 @@ if __name__ == "__main__":
                              'protocol&port': protocol_p,
                              'encryption': encrypted})
         result_csv_file.close()
-
     print("Results written to \"" + out_csv + "\"")
 
     # analyze the percentage of each party in all hosts and the amount of traffic
@@ -287,4 +286,3 @@ if __name__ == "__main__":
     vis_pro.run(result=result, company=company, fig_dir=args.fig_dir)
 
     print("Analysis finished.")
-
