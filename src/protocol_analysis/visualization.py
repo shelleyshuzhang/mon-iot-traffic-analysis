@@ -70,15 +70,16 @@ def calculate_encrypted_dst_percentage(previous_data: list, company):
         t_rcv = traffic_dst_unencrypted[dst][1]
         means1.append(t_snd)
         means2.append(t_rcv)
-    plot_grouped_bars(means1=means1,
-                      means2=means2,
-                      xlabels=traffic_dst_unencrypted.keys(),
-                      name1='traffic_snd',
-                      name2='traffic_rcv',
-                      ylabel='Traffic in bytes',
-                      title='Amount of unencrypted traffic sent '
-                            'and received by each destination (' + company + ')',
-                      figure_name="unencrypted_traffic_dst_" + company)
+    if means1.__len__() != 0 or means2.__len__() != 0:
+        plot_grouped_bars(means1=means1,
+                          means2=means2,
+                          xlabels=traffic_dst_unencrypted.keys(),
+                          name1='traffic_snd',
+                          name2='traffic_rcv',
+                          ylabel='Traffic in bytes',
+                          title='Amount of unencrypted traffic sent '
+                                'and received by each destination (' + company + ')',
+                          figure_name="unencrypted_traffic_dst_" + company)
 
 
 def group_traffic(result: list):
