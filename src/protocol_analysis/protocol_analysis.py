@@ -42,7 +42,6 @@ def dst_protocol_analysis(packets, d_mac, previous_info, protocol_file):
 
     print("Analyzing the protocol and port of each packet")
     for p in packets:
-        print("Finished with one packet...")
         p_ip, snd_rcv = get_pak_ip(p, d_mac)
         if p_ip != 'non-ip' and p_ip in dst_info:
             p_protocol = get_pak_protocol(packet=p,

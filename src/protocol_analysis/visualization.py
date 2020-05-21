@@ -123,6 +123,20 @@ def group_traffic(result: list):
            traffic_dst_unencrypted
 
 
+# use the proper units for large traffic
+def network_traffic_units(traffic_num: int):
+    if traffic_num < 1024:
+        return str(traffic_num) + " Bytes"
+    elif 1024 <= traffic_num < 1048576:
+        return str(round(traffic_num / 1024, 2)) + " KB"
+    elif 1048576 <= traffic_num < 1073741824:
+        return str(round(traffic_num / 1048576, 2)) + " MB"
+    elif 1073741824 <= traffic_num < 1099511627776:
+        return str(round(traffic_num / 1073741824, 2)) + " GB"
+    else:
+        return str(round(traffic_num / 1099511627776, 2)) + " TB"
+
+
 # plot the value in percentage for the given value dict
 def pie_plot_percentage(dict_to_plot: dict, title, figure_name, name_dict):
     plt.figure(figsize=(10, 6))
@@ -130,18 +144,22 @@ def pie_plot_percentage(dict_to_plot: dict, title, figure_name, name_dict):
     labels = []
     values = []
     colors = []
+    num_labels = []
     index = 0
     for name in dict_to_plot:
         labels.append(name_dict[name])
         values.append(dict_to_plot[name])
         colors.append(palette(index))
+        num_label = network_traffic_units(dict_to_plot[name])
+        num_labels.append(num_label)
         index += 1
-    plt.pie(values, colors=colors, labels=values, autopct='%1.1f%%',
-            counterclock=False, shadow=True)
+    plt.pie(values, colors=colors, labels=num_labels,
+            autopct='%1.1f%%', counterclock=False,
+            shadow=True)
     plt.title(title)
     plt.legend(labels, loc=3)
     plt.savefig(figure_name + ".png")
-    plt.show()
+    # plt.show()
 
 
 def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
@@ -158,6 +176,7 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
     labels = []
     values = []
     colors = []
+    num_labels = []
     col_index = 0
     for name in dict_to_plot:
         labels.append(name_dict[name])
@@ -166,14 +185,15 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
             total_traffic += dict_to_plot[name][value_name]
         values.append(total_traffic)
         colors.append(palette(col_index))
+        num_label = network_traffic_units(total_traffic)
+        num_labels.append(num_label)
         if col_index == 4:
             col_index += 3
         col_index += 1
-    values_copy = copy.deepcopy(values)
     values = np.array(values)
     labels = np.char.array(labels)
     por_cent = 100. * values / values.sum()
-    patches, texts = sub1.pie(values, labels=values_copy, colors=colors,
+    patches, texts = sub1.pie(values, labels=num_labels, colors=colors,
                               counterclock=False, shadow=True, radius=1)
     labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, por_cent)]
     sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(-0.1, 1.))
@@ -243,7 +263,7 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
     con.set_linewidth(4)
 
     current.savefig(figure_name + ".png")
-    plt.show()
+    #plt.show()
 
 
 def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figure_name):
@@ -265,7 +285,8 @@ def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figu
         """Attach a text label above each bar in *rects*, displaying its height."""
         for rect in rects:
             height = rect.get_height()
-            ax.annotate('{}'.format(height),
+            height_label = network_traffic_units(height)
+            ax.annotate('{}'.format(height_label),
                         xy=(rect.get_x() + rect.get_width() / 2, height),
                         xytext=(0, 3),  # 3 points vertical offset
                         textcoords="offset points",
@@ -277,4 +298,4 @@ def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figu
     fig.tight_layout()
 
     plt.savefig(figure_name + ".png")
-    plt.show()
+    #plt.show()

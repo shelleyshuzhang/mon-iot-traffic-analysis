@@ -1,9 +1,11 @@
 import csv
 import re
-
 # github for adblock parser: https://github.com/scrapinghub/adblockparser
 # pip install adblockparser
 import adblockparser
+
+from subprocess import check_output
+import subprocess
 
 options = ('device', 'ip', 'host', 'host_full', 'traffic_snd',
            'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
@@ -14,6 +16,7 @@ party_dict = {"-2": "Physical", "-1": "Local",
               "0": "First party", "1": "Support party",
               "2": "Third party", "2.5": "Advertisers",
               "3": "Analytics"}
+company_name_dict = {"google": "Google LLC", "amazon": "Amazon.com Inc."}
 
 
 # find all the third parties in the list of pcap
@@ -111,9 +114,55 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         # the left are third party
         else:
             result['party'][index] = 'Third party'
-        index += 1
 
+        # add or update the organization/company of the host
+        new_party = result['party'][index]
+        # if it's a first party and the first party is amazon and google,
+        # we already know the name of the org
+        if new_party == 'First party' and company in company_name_dict:
+            result['organization'][index] = company_name_dict[company]
+        else:
+            try:
+                # get the org by the who is server
+                org = get_org_using_who_is_server(host)
+                # if it is amazon or google
+                if company in org.lower():
+                    result['organization'][index] = company_name_dict[company]
+                # if the org is empty, use the sld
+                elif org == "" or org == " " or org.lower() == "n/a":
+                    result['organization'][index] = host.split()[0]
+                # else, use the org
+                else:
+                    result['organization'][index] = org
+            except subprocess.CalledProcessError:
+                result['organization'][index] = host.split(".")[0]
+        index += 1
     return result
+
+
+# get the org of a host/IP by using who is
+# server to get its SLD
+def get_org_using_who_is_server(host):
+    who_is_answer = check_output(['whois', host])
+    ls: str = who_is_answer.decode("utf-8")
+    ls: list = ls.split()
+    lowest_index = 0
+    highest_index = ls.__len__() - 1
+    org = ""
+    for s in ls:
+        if 'Registrant' == s:
+            index = ls.index(s, lowest_index, highest_index)
+            if ls[index + 1] == 'Organization:':
+                start_index = index + 2
+                end_index = ls.index(s, index + 2, highest_index)
+                org += ls[start_index]
+                while start_index < end_index - 1:
+                    start_index += 1
+                    org += " "
+                    org += ls[start_index]
+                break
+            lowest_index = index
+    return org
 
 
 # for detect a valid mac address, must use separator ":" or "-"

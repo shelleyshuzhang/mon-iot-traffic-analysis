@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 import csv
 import numpy as np
+from protocol_analysis import visualization as vis
 
 party_name_dict = {"-1": "Local", "0": "First party",
                    "1": "Support party", "2": "Third party",
@@ -105,6 +106,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     labels = []
     values = []
     colors = []
+    num_labels = []
     col_index = 0
     for party in party_hosts_traffic:
         labels.append(party_name_dict[party])
@@ -113,13 +115,15 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
             total_traffic += party_hosts_traffic[party][host]
         values.append(total_traffic)
         colors.append(palette(col_index))
+        num_label = vis.network_traffic_units(total_traffic)
+        num_labels.append(num_label)
         if col_index == 4:
             col_index += 3
         col_index += 1
     values = np.array(values)
     labels = np.char.array(labels)
     por_cent = 100. * values / values.sum()
-    patches, texts = sub1.pie(values, labels=values, colors=colors,
+    patches, texts = sub1.pie(values, labels=num_labels, colors=colors,
                               counterclock=False, shadow=True, radius=1)
     labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, por_cent)]
     sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(-0.1, 1.))
