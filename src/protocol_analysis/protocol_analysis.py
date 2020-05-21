@@ -35,12 +35,12 @@ def run(file_list, device_mac, script_dir, previous_info):
 def dst_protocol_analysis(packets, d_mac, previous_info, protocol_file):
     result = []
 
-    print("Reading the destination info...")
+    print("    Reading the destination info...")
     dst_info: dict = read_dst_csv(result=previous_info)
-    print("Reading common protocol and port info...")
+    print("    Reading common protocol and port info...")
     protocol_info: dict = read_protocol_csv(protocol_file)
 
-    print("Analyzing the protocol and port of each packet")
+    print("    Analyzing the protocol and port of each packet...")
     for p in packets:
         p_ip, snd_rcv = get_pak_ip(p, d_mac)
         if p_ip != 'non-ip' and p_ip in dst_info:

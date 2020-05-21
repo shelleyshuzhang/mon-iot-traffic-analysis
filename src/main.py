@@ -198,10 +198,21 @@ if __name__ == "__main__":
                 if index >= num_proc:
                     index = 0
 
+    print("Analyzing input pcap files...")
     procs = []
     tmp_csv = args.fig_dir + "/" + company + "_tmp.csv"
-    # Run analyze.py with num_proc processes
-    print("Analyzing input pcap files...")
+    
+    #if the tmp csv doesn't exist, create it with the header
+    #analyze.py isn't threadsafe, so this prevents more than 1 row of headers being written
+    if not os.path.isdir(os.path.dirname(tmp_csv)):
+        os.system("mkdir -pv " + os.path.dirname(tmp_csv))
+
+    if not os.path.exists(tmp_csv):
+        with open(tmp_csv, "w+") as f:
+            f.write("device,ip,host,host_full,traffic_snd,traffic_rcv,packet_snd,packet_rcv,"
+                "country,party,lab,experiment,network,input_file,organization\n")
+    
+    # run analyze.py with num_proc processes
     for files in raw_files:
         p = Process(target=run_dest_pipeline, args=(files, mac, tmp_csv))
         procs.append(p)
@@ -211,7 +222,7 @@ if __name__ == "__main__":
         p.join()
 
     # characterize the parties
-    print("Characterizing the parties...")
+    print("\nCharacterizing the parties...")
     result = idtpt.run_extract_third_parties(tmp_csv, script_dir, company)
 
     # check if the traffic is encrypted
@@ -228,10 +239,10 @@ if __name__ == "__main__":
 
     out_csv = args.out_csv
     # write the result to a csv file
-    print("Results written to \"" + out_csv + "\"")
     out_csv_dir = os.path.dirname(out_csv)
     if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
         os.system("mkdir -pv " + out_csv_dir)
+
     with open(file=out_csv, mode='w') as result_csv_file:
         fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
                       'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
@@ -262,6 +273,7 @@ if __name__ == "__main__":
                              'protocol&port': protocol_p,
                              'encryption': encrypted})
         result_csv_file.close()
+    print("Results written to \"" + out_csv + "\"")
 
     # analyze the percentage of each party in all hosts and the amount of traffic
     # sent to each party, and generate the plots
@@ -271,4 +283,6 @@ if __name__ == "__main__":
     # analyze the protocol and ports use; calculate the amount of traffic sent to
     # each destination and protocols, and visualizing the results as plots
     print("Calculating protocol percentages for encryption analysis and generating plots...")
-    vis_pro.run(result=result, company=company)
+    vis_pro.run(result=result, company=company, fig_dir=args.fig_dir)
+
+    print("Analysis finished.")
