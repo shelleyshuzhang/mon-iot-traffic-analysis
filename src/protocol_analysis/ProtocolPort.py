@@ -8,6 +8,8 @@ class ProtocolPort(object):
         self.imp = importance
 
     def __eq__(self, other):
+        #print(self.protocol_port, self.encrypted, self.well_known, self.readable, self.imp)
+        #print(other.protocol_port, other.encrypted, other.well_known, other.readable, other.imp)
         return isinstance(other, ProtocolPort) \
                and self.protocol_port == other.protocol_port \
                and self.encrypted == other.encrypted \
@@ -21,3 +23,6 @@ class ProtocolPort(object):
               self.well_known,
               self.readable,
               self.imp))
+
+    def print_all(self):
+        print(self.protocol_port, self.encrypted, self.well_known, self.readable, self.imp)
