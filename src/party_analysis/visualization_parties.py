@@ -49,7 +49,7 @@ def calculate_party_percentage(csv_filename: str, company: str, fig_dir: str):
         sld_filename = fig_dir + "/" + company + "_all_sld.txt"
         sld_file = open(sld_filename, 'w+')
         write_hosts_by_party(party_dict=result, file=sld_file)
-        print("Second level domains written to \"" + sld_filename + "\"")
+        print("    Second level domains written to \"" + sld_filename + "\"")
 
         # plot traffic sent by different parties
         for p in party_bar_dict:
@@ -90,7 +90,7 @@ def pie_plot_percentage(party_dict: dict, title, save_name):
     plt.title(title)
     plt.legend(labels, loc=3)
     plt.savefig(save_name)
-    print("Plot saved to \"" + save_name + "\"")
+    print("    Plot saved to \"" + save_name + "\"")
     #plt.show()
 
 
@@ -201,5 +201,5 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     con.set_linewidth(4)
 
     current.savefig(save_name)
-    print("Plot saved to \"" + save_name + "\"")
+    print("    Plot saved to \"" + save_name + "\"")
     #plt.show()

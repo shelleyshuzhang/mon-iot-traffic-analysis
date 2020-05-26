@@ -29,12 +29,12 @@ protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port:
 
 
 # the result is a list of DestinationPro
-def run(result: list, company):
+def run(result: list, company, fig_dir):
     calculate_encrypted_dst_percentage(previous_data=result,
-                                       company=company)
+                                       company=company, fig_dir=fig_dir)
 
 
-def calculate_encrypted_dst_percentage(previous_data: list, company):
+def calculate_encrypted_dst_percentage(previous_data: list, company, fig_dir):
     encryption_dict, \
     party_dict_encrypted, \
     party_dict_unencrypted, \
@@ -45,7 +45,7 @@ def calculate_encrypted_dst_percentage(previous_data: list, company):
                         title='Total amount of encrypted and unencrypted '
                               'traffic sent by the ' + company
                               + " device (Bytes)",
-                        figure_name="traffic_encryption%_" + company,
+                        figure_name=fig_dir + "/" + company + "_traffic_encryption.png",
                         name_dict=protocol_encrypted_dict)
 
     # plot the percentage of unencrypted traffic sent to each dst and party
@@ -55,7 +55,8 @@ def calculate_encrypted_dst_percentage(previous_data: list, company):
                                     title="Total amount of unencrypted traffic sent to each "
                                           "party and destination by the " + company
                                           + " device (Bytes)",
-                                    figure_name='unencrypted%_' + company + "_" + party_name_dict[p],
+                                    figure_name=fig_dir + "/" + company + '_unencrypted_'
+                                                + party_name_dict[p].replace(" ", "_") + ".png",
                                     name_dict=party_name_dict,
                                     party_bar_plot=p,
                                     position=party_bar_dict[p],
@@ -79,7 +80,7 @@ def calculate_encrypted_dst_percentage(previous_data: list, company):
                           ylabel='Traffic in bytes',
                           title='Amount of unencrypted traffic sent '
                                 'and received by each destination (' + company + ')',
-                          figure_name="unencrypted_traffic_dst_" + company)
+                          figure_name=fig_dir + "/" + company + "_unencrypted_traffic_dst.png")
 
 
 def group_traffic(result: list):
@@ -159,7 +160,8 @@ def pie_plot_percentage(dict_to_plot: dict, title, figure_name, name_dict):
             shadow=True)
     plt.title(title)
     plt.legend(labels, loc=3)
-    plt.savefig(figure_name + ".png")
+    plt.savefig(figure_name)
+    print("    Plot saved to \"" + figure_name + "\"")
     # plt.show()
 
 
@@ -263,7 +265,8 @@ def plot_pie_bar_percentage(dict_to_plot: dict, title, figure_name,
     sub2.add_artist(con)
     con.set_linewidth(4)
 
-    current.savefig(figure_name + ".png")
+    current.savefig(figure_name)
+    print("    Plot saved to \"" + figure_name + "\"")
     #plt.show()
 
 
@@ -298,5 +301,6 @@ def plot_grouped_bars(means1, means2, xlabels, name1, name2, ylabel, title, figu
 
     fig.tight_layout()
 
-    plt.savefig(figure_name + ".png")
+    plt.savefig(figure_name)
+    print("    Plot saved to \"" + figure_name + "\"")
     #plt.show()
