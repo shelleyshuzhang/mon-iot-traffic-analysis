@@ -121,7 +121,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         # we already know the name of the org
         if new_party == 'First party' and company in company_name_dict:
             result['organization'][index] = company_name_dict[company]
-        else:
+        elif new_party != 'Physical' and new_party != 'Local':
             try:
                 # get the org by the who is server
                 org = get_org_using_who_is_server(host)
@@ -131,12 +131,12 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
                 # if the org is empty, use the sld
                 elif org == "" or org == " " or org.lower() == "n/a" \
                         or org.lower() == "registrant":
-                    result['organization'][index] = host.split(".")[0]
+                    result['organization'][index] = host.split(".")[0].capitalize()
                 # else, use the org
                 else:
                     result['organization'][index] = org
             except subprocess.CalledProcessError:
-                result['organization'][index] = host.split(".")[0]
+                result['organization'][index] = host.split(".")[0].capitalize()
         index += 1
     return result
 
