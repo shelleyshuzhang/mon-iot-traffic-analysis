@@ -108,6 +108,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", dest="fig_dir", default="plots")
     parser.add_argument("-o", dest="out_csv", default="results.csv")
     parser.add_argument("-p", dest="num_proc", default="")
+    parser.add_argument("-t", dest="dst_type", default="sld")
     parser.add_argument("-h", dest="help", action="store_true", default=False)
     args = parser.parse_args()
 
@@ -120,6 +121,7 @@ if __name__ == "__main__":
     company: str = args.company
     company = company.lower()
     num_proc = 1
+    dst_type = args.dst_type
 
     # Error checking arguments
     errors = False
@@ -278,7 +280,8 @@ if __name__ == "__main__":
     # analyze the percentage of each party in all hosts and the amount of traffic
     # sent to each party, and generate the plots
     print("Calculating party percentages and generating plots...")
-    vis.calculate_party_percentage(args.out_csv, company, args.fig_dir)
+    vis.calculate_party_percentage(csv_filename=args.out_csv, company=company,
+                                   fig_dir=args.fig_dir, dst_type=dst_type)
 
     # # analyze the protocol and ports use; calculate the amount of traffic sent to
     # # each destination and protocols, and visualizing the results as plots

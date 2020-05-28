@@ -151,6 +151,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
                     result['organization'][index] = host.split(".")[0].capitalize()
                 # else, use the org
                 else:
+                    org = org.split(", ")[0]
                     result['organization'][index] = org.capitalize()
             except subprocess.CalledProcessError:
                 result['organization'][index] = host.split(".")[0].capitalize()
