@@ -62,6 +62,7 @@ There are several options to choose from, which are summarized below:
   - PiePlot
 
 - The `-l` option specifies how the `-d` and the `-p` options should be combined to create plots. If the `-l` option is specified, the `-d` and `-p` options are combined in a linear style. If it is not specified, the options are combined in a 2D-array style.
+  
   Example: The `-d` option is `org,sld`, and the `-p` option is `BarHPlot,PiePlot`. The following sets of plots are created if
   - the `-l` option is specified:
     - a set of `BarHPlot` using `org` data
@@ -73,6 +74,7 @@ There are several options to choose from, which are summarized below:
     - a set of `PiePlot` using `sld` data
 
 - If the `-l` option is specified, and the `-d` and the `-p` options differ in the number of items, plots will be generated up until one list runs out of items.
+  
   Example: The `-d` option is `org,sld`, and the `-p` option is `PiePlot`. Only a set of `PiePlot` using `org` data is generated.
 
 ## Output
