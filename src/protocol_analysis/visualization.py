@@ -36,7 +36,6 @@ def run(result: list, company, fig_dir):
 
 def calculate_encrypted_dst_percentage(previous_data: list, company, fig_dir):
     encryption_dict, \
-    party_dict_encrypted, \
     party_dict_unencrypted, \
     traffic_dst_unencrypted = group_traffic(previous_data)
 
@@ -83,9 +82,7 @@ def calculate_encrypted_dst_percentage(previous_data: list, company, fig_dir):
                           figure_name=fig_dir + "/" + company + "_unencrypted_traffic_dst.png")
 
 
-def group_traffic(result: list):
-    dst_pros = result
-    party_dict_encrypted = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
+def group_traffic(dst_pros: list):
     party_dict_unencrypted = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
     traffic_encrypted_unencrypted = {}
     traffic_dst_unencrypted = {}
@@ -93,6 +90,7 @@ def group_traffic(result: list):
     for dst_pro in dst_pros:
         party = party_index_dict[dst_pro.host.party]
         host = dst_pro.host.host
+        protocol_port = dst_pro.protocol_port.protocol_port
         traffic = dst_pro.rcv
         traffic_snd = dst_pro.snd
         encrypt = dst_pro.protocol_port.encrypted
@@ -101,26 +99,20 @@ def group_traffic(result: list):
         else:
             traffic_encrypted_unencrypted[encrypt] = traffic
 
-        if dst_pro.protocol_port.imp == "1":
-            if encrypt == "1":
-                if host in party_dict_encrypted[party]:
-                    party_dict_encrypted[party][host] += traffic
-                else:
-                    party_dict_encrypted[party][host] = traffic
-            elif encrypt == "0":
-                if host in party_dict_unencrypted[party]:
-                    party_dict_unencrypted[party][host] += traffic
-                else:
-                    party_dict_unencrypted[party][host] = traffic
+        if encrypt == "0" and dst_pro.protocol_port.imp == "1":
+            h_p = host + "(" + protocol_port + ")"
+            if host in party_dict_unencrypted[party]:
+                party_dict_unencrypted[party][h_p] += traffic
+            else:
+                party_dict_unencrypted[party][h_p] = traffic
 
-                if host in traffic_dst_unencrypted:
-                    traffic_dst_unencrypted[host][0] += traffic_snd
-                    traffic_dst_unencrypted[host][1] += traffic
-                else:
-                    traffic_dst_unencrypted[host] = [traffic_snd, traffic]
+            if host in traffic_dst_unencrypted:
+                traffic_dst_unencrypted[host][0] += traffic_snd
+                traffic_dst_unencrypted[host][1] += traffic
+            else:
+                traffic_dst_unencrypted[host] = [traffic_snd, traffic]
 
     return traffic_encrypted_unencrypted, \
-           party_dict_encrypted, \
            party_dict_unencrypted, \
            traffic_dst_unencrypted
 
