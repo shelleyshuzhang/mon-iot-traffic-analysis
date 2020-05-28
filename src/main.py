@@ -30,9 +30,10 @@ Usage: python3 {prog_name} -i PCAP_DIR -m MAC_ADDR -s IMC_DIR [OPTION]...
 
 Performs destination and protocol analysis. Determines the percentage of first,
 support, third, and local party traffic. Produces a CSV file which includes
-traffic party and organization. Several plots are also generated for visualization.
+traffic party, organization, and information about encryption. Several plots are
+also generated for visualization.
 
-Example: python3 {prog_name} -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -s ../intl-iot/ -d Amazon -p 4
+Example: python3 {prog_name} -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -s ../intl-iot/ -c Amazon -d org,sld -p BarHPlot -n 4
 
 Required arguments:
   -i PCAP_DIR path to the directory containing input pcap files for analysis
@@ -44,16 +45,34 @@ Required arguments:
                 2019); the code can be found here: https://github.com/NEU-SNS/intl-iot
 
 Optional arguments:
-  -d DEV_MFR  company that created the device that generated the data in PCAP_DIR;
+  -c DEV_MFR  company that created the device that generated the data in PCAP_DIR;
                 used to identify first parties (Default = unknown)
   -f FIG_DIR  path to a directory to place the generated plots; will be generated
                 if it does not currently exist (Default = plots/)
   -o OUT_CSV  path to the output CSV file; if it exists, results will be appended,
                 else, it will be created (Default = results.csv)
-  -p NUM_PROC number of CPU processes to use to run the destination analysis portion
-                (Default = 1)
+  -d DST_TYPS comma-separated list of destination types to use to generate party
+                analysis plots; choose from fqdn, org, and sld
+  -p PLT_TYPS comma-separated list of plot types to use to generate party analysis
+                plots; choose from BarHPlot and PiePlot
+  -l          generates plots using DST_TYPS and PLT_TYPS linearly instead of using
+                a 2D-array-like style
+  -n NUM_PROC number of CPU processes to use to run the destination analysis and
+                protocol analysis portions (Default = 1)
   -h          print this usage statement and exit
-                
+
+Notes:
+ - Types must be specified in both the -d and -p options for party analysis plots to
+     be generated. DST_TYPS is the type of data used to make the plot, while PLT_TYPS
+     is the type of graph used to display the data.
+ - Example for the -l option: If DST_TYPS is fqdn,org and PLT_TYPS is BarHPlot,PiePlot,
+     the following sets of plots would be generated
+       - without the -l option: BarHPlot using fqdn, BarHPlot using org, PiePlot using
+           fqdn, PiePlot using org.
+       - with the -l option: BarHPlot using fqdn, PiePlot using org.
+ - If the -l option is specified and DST_TYPS and PLT_TYPS are of different lengths,
+     plots will be generated up until there are no more items in a list.
+
 For more information, see the README.""".format(prog_name=path)
 
 
@@ -104,10 +123,13 @@ if __name__ == "__main__":
     parser.add_argument("-i", dest="dir_name", default="")
     parser.add_argument("-m", dest="mac", default="")
     parser.add_argument("-s", dest="software_location", default="")
-    parser.add_argument("-d", dest="company", default="unknown")
+    parser.add_argument("-c", dest="company", default="unknown")
     parser.add_argument("-f", dest="fig_dir", default="plots")
     parser.add_argument("-o", dest="out_csv", default="results.csv")
-    parser.add_argument("-p", dest="num_proc", default="")
+    parser.add_argument("-d", dest="dst_types", default="")
+    parser.add_argument("-p", dest="plot_types", default="")
+    parser.add_argument("-l", dest="linear", action="store_true", default=False)
+    parser.add_argument("-n", dest="num_proc", default="1")
     parser.add_argument("-h", dest="help", action="store_true", default=False)
     args = parser.parse_args()
 
@@ -119,7 +141,14 @@ if __name__ == "__main__":
     software_location = args.software_location
     company: str = args.company
     company = company.lower()
-    num_proc = 1
+    dst_types = args.dst_types.split(",")
+    # for each type, make lowercase, remove trailing/leading white space
+    dst_types = [dst_type.strip().lower() for dst_type in dst_types]
+    plot_types = args.plot_types.split(",")
+    plot_types = [plot_type.strip().lower() for plot_type in plot_types]
+    if not args.linear: #remove duplicates if not generating plots linearly
+        dst_types = list(dict.fromkeys(dst_types))
+        plot_types = list(dict.fromkeys(plot_types))
 
     # Error checking arguments
     errors = False
@@ -162,13 +191,26 @@ if __name__ == "__main__":
         print("%s%s: Error: The output file should be a CSV (.csv) file. Received \"%s\".%s"
               % (RED, path, args.out_csv, END), file=sys.stderr)
 
+    for dst_type in dst_types:
+        if dst_type not in ("sld", "fqdn", "org", ""):
+            errors = True
+            print("%s%s: Error: \"%s\" is not a valid destination type."
+                  " Choose from fqdn, org, and sld.%s"
+                  % (RED, path, dst_type, END), file=sys.stderr)
+
+    for plot_type in plot_types:
+        if plot_type not in ("pieplot", "barhplot", ""):
+            errors = True
+            print("%s%s: Error: \"%s\" is not a valid plot type."
+                  " Choose from BarHPlot and PiePlot.%s"
+                  % (RED, path, plot_type, END), file=sys.stderr)
+
     bad_proc = False
     try:
-        if args.num_proc != "":
-            if int(args.num_proc) > 0:
-                num_proc = int(args.num_proc)
-            else:
-                bad_proc = True
+        if int(args.num_proc) > 0:
+            num_proc = int(args.num_proc)
+        else:
+            bad_proc = True
     except:
         bad_proc = True
 
@@ -201,17 +243,17 @@ if __name__ == "__main__":
     print("Analyzing input pcap files...")
     procs = []
     tmp_csv = args.fig_dir + "/" + company + "_tmp.csv"
-    
-    #if the tmp csv doesn't exist, create it with the header
-    #analyze.py isn't threadsafe, so this prevents more than 1 row of headers being written
+
+    # if the tmp csv doesn't exist, create it with the header
+    # analyze.py isn't threadsafe, so this prevents more than 1 row of headers being written
     if not os.path.isdir(os.path.dirname(tmp_csv)):
         os.system("mkdir -pv " + os.path.dirname(tmp_csv))
 
     if not os.path.exists(tmp_csv):
         with open(tmp_csv, "w+") as f:
             f.write("device,ip,host,host_full,traffic_snd,traffic_rcv,packet_snd,packet_rcv,"
-                "country,party,lab,experiment,network,input_file,organization\n")
-    
+                    "country,party,lab,experiment,network,input_file,organization\n")
+
     # run analyze.py with num_proc processes
     for files in raw_files:
         p = Process(target=run_dest_pipeline, args=(files, mac, tmp_csv))
@@ -235,7 +277,8 @@ if __name__ == "__main__":
     result = ptals.run(file_list=file_list,
                        device_mac=mac,
                        script_dir=script_dir,
-                       previous_info=result)
+                       previous_info=result,
+                       num_proc=num_proc)
 
     out_csv = args.out_csv
     # write the result to a csv file
@@ -277,8 +320,11 @@ if __name__ == "__main__":
 
     # analyze the percentage of each party in all hosts and the amount of traffic
     # sent to each party, and generate the plots
-    print("Calculating party percentages and generating plots...")
-    vis.calculate_party_percentage(args.out_csv, company, args.fig_dir)
+    if dst_types != [""] and plot_types != [""]:
+        print("Calculating party percentages and generating plots...")
+        vis.calculate_party_percentage(csv_filename=args.out_csv, company=company,
+                                       fig_dir=args.fig_dir, dst_types=dst_types,
+                                       plot_types=plot_types, linear=args.linear)
 
     # analyze the protocol and ports use; calculate the amount of traffic sent to
     # each destination and protocols, and visualizing the results as plots
@@ -286,3 +332,4 @@ if __name__ == "__main__":
     vis_pro.run(result=result, company=company, fig_dir=args.fig_dir)
 
     print("Analysis finished.")
+
