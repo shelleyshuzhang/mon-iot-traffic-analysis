@@ -272,7 +272,7 @@ if __name__ == "__main__":
                              'organization': dst.organization,
                              'protocol&port': protocol_p,
                              'encryption': encrypted})
-        result_csv_file.close()
+        #result_csv_file.close()
     print("Results written to \"" + out_csv + "\"")
 
     # analyze the percentage of each party in all hosts and the amount of traffic

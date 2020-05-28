@@ -4,7 +4,7 @@ import csv
 
 from multiprocessing import Process
 from multiprocessing import Manager
-from scapy.utils import rdpcap
+from scapy.utils import PcapReader
 from protocol_analysis import Destination, DestinationPro, ProtocolPort
 
 ####### must import the packet in scapy in order to see the results #######
@@ -23,7 +23,7 @@ protocol_readable_dict = {"1": "human-readable", "0": "human-unreadable",
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
 protocol_importance_dict = {"1": "important", "0": "unimportant", "-1": "unknown"}
 
-num_proc = 4 
+num_proc = 4
 
 dst_info = {}
 protocol_info = {}
@@ -98,56 +98,63 @@ def dst_protocol_analysis(pid, d_mac, result_list):
     result = []
 
     #count = 0
-    paks = []
+    #paks = []
+    #for f in filenames[pid]:
+        #paks.extend(PcapReader(f))
+
+    print(pid, "split2")
     for f in filenames[pid]:
-        paks.extend(rdpcap(f))
-
-    print(pid, len(paks), "split2")
-    for p in paks:
-        p_ip, snd_rcv = get_pak_ip(p, d_mac)
-        if p_ip != 'non-ip' and p_ip in dst_info:
-            #print(count, p_ip)
-            p_protocol = get_pak_protocol(packet=p,
-                                          d_mac=d_mac)
-            current: DestinationPro.DestinationPro
-            if p_protocol in protocol_info:
-                current = DestinationPro.DestinationPro(dst_info[p_ip],
-                                                        protocol_info[p_protocol])
-            else:
-                current = DestinationPro.DestinationPro(dst_info[p_ip],
-                                                        ProtocolPort.ProtocolPort(protocol_port=p_protocol,
-                                                                                  encrypted='-1',
-                                                                                  expected='-1',
-                                                                                  readable='-1',
-                                                                                  importance='-1'))
-            #print('one') 
-            if current in result:
-                index = result.index(current)
-                #current.protocol_port.print_all()
-                #result[index].protocol_port.print_all()
-                #print(count, index)
-                if snd_rcv == 'snd':
-                    result[index].add_snd(len(p))
-                    result[index].add_ps(1)
+        for p in PcapReader(f):
+            packet_len = len(p)
+            p_ip, snd_rcv = get_pak_ip(p, d_mac)
+            if p_ip != 'non-ip' and p_ip in dst_info:
+                #print(count, p_ip)
+                p_protocol = get_pak_protocol(packet=p, d_mac=d_mac)
+                host = dst_info[p_ip]
+                prot = None
+                if p_protocol in protocol_info:
+                    prot = protocol_info[p_protocol]
                 else:
-                    result[index].add_rcv(len(p))
-                    result[index].add_pr(1)
+                    prot = ProtocolPort.ProtocolPort(p_protocol, '-1', '-1', '-1', '-1')
 
-                #print(count, index, result[index].snd, result[index].rcv, result[index].p_snd, result[index].p_rcv)
+                index = 0
+                isOld = False
+                for dst_pro in result:
+                    if host == dst_pro.host and prot == dst_pro.protocol_port:
+                        isOld = True
+                        break
+                    index += 1
 
-            else:
-                #print("new")
-                #current.print_all()
-                #print(count, current.host, current.protocol_port)
-                if snd_rcv == 'snd':
-                    current.add_snd(len(p))
-                    current.add_ps(1)
+                #print('one') 
+                if isOld:
+                    #index = result.index(current)
+                    #current.protocol_port.print_all()
+                    #result[index].protocol_port.print_all()
+                    #print(count, index)
+                    if snd_rcv == 'snd':
+                        result[index].add_snd(packet_len)
+                        result[index].add_ps(1)
+                    else:
+                        result[index].add_rcv(packet_len)
+                        result[index].add_pr(1)
+
+                    #print(count, index, result[index].snd, result[index].rcv, result[index].p_snd, result[index].p_rcv)
+
                 else:
-                    current.add_rcv(len(p))
-                    current.add_pr(1)
-                result.append(current)
+                    #print("new")
+                    #current.print_all()
+                    #print(count, current.host, current.protocol_port)
+                    current: DestinationPro.DestinationPro
+                    current = DestinationPro.DestinationPro(host, prot)
+                    if snd_rcv == 'snd':
+                        current.add_snd(packet_len)
+                        current.add_ps(1)
+                    else:
+                        current.add_rcv(packet_len)
+                        current.add_pr(1)
+                    result.append(current)
     
-        #count = count + 1
+            #count = count + 1
    
     print("puttt", pid, len(result_list), len(result))
     result_list[pid] = result

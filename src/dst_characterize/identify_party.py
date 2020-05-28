@@ -22,12 +22,14 @@ company_name_dict = {"google": "Google LLC", "amazon": "Amazon.com Inc."}
 # find all the third parties in the list of pcap
 # files and write them to a txt file
 def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
+    #print("start")
     all_ads = set()
 
     # fina all the third parties using
     # the csv file we have
     all_ads.union(find_third_party_using_given_csv(input_csv_file, script_dir))
 
+    #print("1")
     # read each line from the input csv file
     result = {key: list() for key in options}
     max_host = ''
@@ -57,6 +59,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
                 result[title].append(row[title])
                 index += 1
 
+    #print("2")
     general_party_info = {'0': set(),
                           '1': set(),
                           '2': set(),
@@ -79,6 +82,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         else:
             general_party_info[current_party].add(line.split("\n")[0])
 
+    #print("3")
     general_party_info['2.5'].union(all_ads)
 
     # if the user does not provide the first party company,
@@ -94,6 +98,8 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             # are Amazon and Google for now)
             general_party_info = read_party_info(filename=script_dir + '/dst_characterize/unique_sld_' + c,
                                                  party_info=general_party_info)
+    
+    #print("4")
     # hosts that contain the first party name are
     # most likely (could be not accurate) the first parties
     for h in host_list:
@@ -101,7 +107,9 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             general_party_info['0'].add(h)
 
     index = 0
+    host_org = {}
     for host in host_list:
+        #print("a", index)
         party = identify_party(host=host, party_info=general_party_info)
         if party != "no party":
             result['party'][index] = party_dict[party]
@@ -119,12 +127,20 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         new_party = result['party'][index]
         # if it's a first party and the first party is amazon and google,
         # we already know the name of the org
+        #print("b", index, host)
         if new_party == 'First party' and company in company_name_dict:
             result['organization'][index] = company_name_dict[company]
         else:
             try:
-                # get the org by the who is server
-                org = get_org_using_who_is_server(host)
+                #print("oh le le")
+                org = ""
+                if host in host_org: # use organization in dict if host exists in the dict
+                    org = host_org[host]
+                else: # get organzation using whois and save host/org to dict
+                    org = get_org_using_who_is_server(host)
+                    #print("oisijfoiwjfoihweoefho", host, org)
+                    host_org[host] = org
+
                 # if it is amazon or google
                 if company in org.lower():
                     result['organization'][index] = company_name_dict[company]
@@ -137,31 +153,45 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             except subprocess.CalledProcessError:
                 result['organization'][index] = host.split(".")[0]
         index += 1
+    #print("5")
     return result
 
 
 # get the org of a host/IP by using who is
 # server to get its SLD
 def get_org_using_who_is_server(host):
+    #print("get org host:", host)
     who_is_answer = check_output(['whois', host])
     ls: str = who_is_answer.decode("utf-8")
-    ls: list = ls.split()
-    lowest_index = 0
-    highest_index = ls.__len__() - 1
+    ls: list = ls.splitlines()
     org = ""
+    #print("len", len(ls))
+    #simpler way of doing below
     for s in ls:
-        if 'Registrant' == s:
-            index = ls.index(s, lowest_index, highest_index)
-            if ls[index + 1] == 'Organization:':
-                start_index = index + 2
-                end_index = ls.index(s, index + 2, highest_index)
-                org += ls[start_index]
-                while start_index < end_index - 1:
-                    start_index += 1
-                    org += " "
-                    org += ls[start_index]
-                break
-            lowest_index = index
+        if s.startswith("Registrant Organization: "):
+            org = s[25:]
+            break
+
+    #lowest_index = 0
+    #highest_index = ls.__len__() - 1
+    #org = ""
+    #start_index = 0
+    #end_index = 0
+    #print("len", len(ls))
+    #for s in ls:
+    #    if 'Registrant' == s:
+    #        index = ls.index(s, lowest_index, highest_index)
+    #        if ls[index + 1] == 'Organization:':
+    #            start_index = index + 2
+    #            end_index = ls.index(s, index + 2, highest_index)
+    #            org += ls[start_index]
+    #            while start_index < end_index - 1:
+    #                start_index += 1
+    #                org += " "
+    #                org += ls[start_index]
+    #            break
+    #        lowest_index = index
+    print("done", "host:", host, "org:", org)
     return org
 
 
@@ -200,23 +230,40 @@ def read_party_info(filename, party_info):
 
 
 def find_third_party_using_given_csv(csv_file, script_dir):
-    file = open(script_dir + '/dst_characterize/easylist_adblock.txt', 'r')
-    filters = []
-    for line in file:
-        filters.append(line)
-    ad_rules = adblockparser.AdblockRules(filters)
+    #file = open(script_dir + '/dst_characterize/easylist_adblock.txt', 'r')
+    #filters = []
+    #for line in file:
+    #    filters.append(line)
+    #ad_rules = adblockparser.AdblockRules(filters)
+
+    #simpler way of doing above
+    ad_rules = []
+    with open(script_dir + '/dst_characterize/easylist_adblock.txt', 'r') as f:
+        ad_rules = adblockparser.AdblockRules(f.readlines())
 
     ad_list = set()
 
+    #print("a")
     with open(csv_file, mode="r") as csv_file1:
         csv_reader = csv.DictReader(csv_file1)
+        visited_domains = [] #don't need to run domains through ad rules more than once
+        #i = 0
         for row in csv_reader:
             current_domain: str = row[options[3]]
-            current_domain_full = "http://" + current_domain + "/"
-            if ad_rules.should_block(current_domain_full):
-                ad_list.add(current_domain)
-            else:
-                current_domain_full = "https://" + current_domain + "/"
+            if current_domain not in visited_domains:
+                visited_domains.append(current_domain)
+                current_domain_full = "http://" + current_domain + "/"
+                #print(i, current_domain)
                 if ad_rules.should_block(current_domain_full):
+                    #print("asdfasdfasdfasdf")
                     ad_list.add(current_domain)
+                else:
+                    current_domain_full = "https://" + current_domain + "/"
+                    if ad_rules.should_block(current_domain_full):
+                        #print("fdsasfdsadfas")
+                        ad_list.add(current_domain)
+            #i += 1
+    print("ad len", len(ad_list))
+    for x in ad_list:
+        print(x)
     return ad_list

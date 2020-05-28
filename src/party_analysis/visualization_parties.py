@@ -22,10 +22,10 @@ party_index_dict = {"Physical": "-2", "Local": "-1",
 
 
 def calculate_party_percentage(csv_filename: str, company: str, fig_dir: str):
+    result = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
     with open(csv_filename, mode="r") as csv_file1:
         csv_reader = csv.DictReader(csv_file1)
 
-        result = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
         for row in csv_reader:
             current_domain_sld: str = row['host']
             current_party = row['party']
@@ -38,37 +38,37 @@ def calculate_party_percentage(csv_filename: str, company: str, fig_dir: str):
                 else:
                     result[current_party][current_domain_sld] = size
 
-        # plot the percentage of different parties
-        pie_plot_percentage(party_dict=result,
-                            title="The percentage of first, support and "
-                                  "third parties in all destinations ("
-                                  + company + " device/in bytes)",
-                            save_name=fig_dir + "/" + company + "_device_parties.png")
+    # plot the percentage of different parties
+    pie_plot_percentage(party_dict=result,
+                        title="The percentage of first, support and "
+                              "third parties in all destinations ("
+                              + company + " device/in bytes)",
+                        save_name=fig_dir + "/" + company + "_device_parties.png")
 
-        # write all the sld by party for the device
-        sld_filename = fig_dir + "/" + company + "_all_sld.txt"
-        sld_file = open(sld_filename, 'w+')
-        write_hosts_by_party(party_dict=result, file=sld_file)
-        print("    Second level domains written to \"" + sld_filename + "\"")
+    # write all the sld by party for the device
+    sld_filename = fig_dir + "/" + company + "_all_sld.txt"
+    write_hosts_by_party(party_dict=result, fname=sld_filename)
+    print("    Second level domains written to \"" + sld_filename + "\"")
 
-        # plot traffic sent by different parties
-        for p in party_bar_dict:
-            index = party_index_dict[p]
-            if result[index].__len__() != 0:
-                plot_traffic_dst(party_hosts_traffic=result,
-                                 party_bar_plot=party_bar_dict[p],
-                                 save_name=fig_dir + "/" + company + "_" 
-                                 + p.split()[0] + "_party_traffic.png",
-                                 title="The percentage of traffic sent "
-                                       "to each destination ("
-                                       + company + " device/in bytes)")
+    # plot traffic sent by different parties
+    for p in party_bar_dict:
+        index = party_index_dict[p]
+        if result[index].__len__() != 0:
+            plot_traffic_dst(party_hosts_traffic=result,
+                             party_bar_plot=party_bar_dict[p],
+                             save_name=fig_dir + "/" + company + "_" 
+                                      + p.split()[0] + "_party_traffic.png",
+                             title="The percentage of traffic sent "
+                                   "to each destination ("
+                                   + company + " device/in bytes)")
 
 
-def write_hosts_by_party(party_dict, file):
-    for p in party_dict:
-        file.write(p + " party sld:\n")
-        for sld in party_dict[p]:
-            file.write(sld + "\n")
+def write_hosts_by_party(party_dict, fname):
+    with open(fname, "w+") as f:
+        for p in party_dict:
+            f.write(p + " party sld:\n")
+            for sld in party_dict[p]:
+                f.write(sld + "\n")
 
 
 def pie_plot_percentage(party_dict: dict, title, save_name):
