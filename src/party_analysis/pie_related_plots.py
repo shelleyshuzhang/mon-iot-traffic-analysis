@@ -63,7 +63,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name,
             total_traffic += current_t
             if all_hosts_len > 20 and \
                     ((party != "2.5" and current_t / all_t <= 0.002)
-                     or (party == "2.5" and current_t / all_t <= all_hosts_len * 0.0001)):
+                     or (party == "2.5" and current_t / all_t <= 0.008)):
                 other_h_t += current_t
                 too_small_h.append(host)
         if other_h_t > 0:
