@@ -108,8 +108,8 @@ if __name__ == "__main__":
     parser.add_argument("-f", dest="fig_dir", default="plots")
     parser.add_argument("-o", dest="out_csv", default="results.csv")
     parser.add_argument("-p", dest="num_proc", default="")
-    parser.add_argument("-t", dest="dst_type", default="sld")
-    parser.add_argument("-pt", dest="plot_type", default="PiePlot")
+    parser.add_argument("-t", dest="dst_type", default="")
+    parser.add_argument("-pt", dest="plot_type", default="")
     parser.add_argument("-h", dest="help", action="store_true", default=False)
     args = parser.parse_args()
 
@@ -184,100 +184,100 @@ if __name__ == "__main__":
     if errors:
         print_usage(1)
     # End error checking
-    #
-    # raw_files = []
-    # index = 0
-    # # Create the groups to run analyze.py with processes
-    # while index < num_proc:
-    #     raw_files.append([])
-    #     index += 1
-    #
-    # index = 0
-    # # Split the pcap files into num_proc groups
-    # for root, dirs, files in os.walk(dir_name):
-    #     for filename in files:
-    #         if filename.endswith("pcap") and not filename.startswith("."):
-    #             raw_files[index].append(root + "/" + filename)
-    #             index += 1
-    #             if index >= num_proc:
-    #                 index = 0
-    #
-    # print("Analyzing input pcap files...")
-    # procs = []
-    # tmp_csv = args.fig_dir + "/" + company + "_tmp.csv"
-    #
-    # #if the tmp csv doesn't exist, create it with the header
-    # #analyze.py isn't threadsafe, so this prevents more than 1 row of headers being written
-    # if not os.path.isdir(os.path.dirname(tmp_csv)):
-    #     os.system("mkdir -pv " + os.path.dirname(tmp_csv))
-    #
-    # if not os.path.exists(tmp_csv):
-    #     with open(tmp_csv, "w+") as f:
-    #         f.write("device,ip,host,host_full,traffic_snd,traffic_rcv,packet_snd,packet_rcv,"
-    #             "country,party,lab,experiment,network,input_file,organization\n")
-    #
-    # # run analyze.py with num_proc processes
-    # for files in raw_files:
-    #     p = Process(target=run_dest_pipeline, args=(files, mac, tmp_csv))
-    #     procs.append(p)
-    #     p.start()
-    #
-    # for p in procs:
-    #     p.join()
-    #
-    # # characterize the parties
-    # print("\nCharacterizing the parties...")
-    # result = idtpt.run_extract_third_parties(tmp_csv, script_dir, company)
-    #
-    # # check if the traffic is encrypted
-    # print("Analyzing traffic encryption...")
-    # file_list = []
-    # for files in raw_files:
-    #     file_list.extend(files)
-    # # result is a list of DestinationPro that
-    # # contains all the info
-    # result = ptals.run(file_list=file_list,
-    #                    device_mac=mac,
-    #                    script_dir=script_dir,
-    #                    previous_info=result)
-    #
-    # out_csv = args.out_csv
-    # # write the result to a csv file
-    # out_csv_dir = os.path.dirname(out_csv)
-    # if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
-    #     os.system("mkdir -pv " + out_csv_dir)
-    #
-    # with open(file=out_csv, mode='w') as result_csv_file:
-    #     fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
-    #                   'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
-    #                   'party', 'organization', 'protocol&port', 'encryption')
-    #     writer = csv.DictWriter(result_csv_file, fieldnames=fieldnames)
-    #     writer.writeheader()
-    #     for dp in result:
-    #         dst = dp.host
-    #         pro = dp.protocol_port
-    #         send = dp.snd
-    #         received = dp.rcv
-    #         p_snd = dp.p_snd
-    #         p_rcv = dp.p_rcv
-    #         encrypted = protocol_encrypted_dict[pro.encrypted]
-    #         protocol_p = pro.protocol_port
-    #         if protocol_p in protocol_details:
-    #             protocol_p = protocol_details[protocol_p]
-    #         writer.writerow({'ip': dst.ip,
-    #                          'host': dst.host,
-    #                          'host_full': dst.host_full,
-    #                          'traffic_snd': send,
-    #                          'traffic_rcv': received,
-    #                          'packet_snd': p_snd,
-    #                          'packet_rcv': p_rcv,
-    #                          'country': dst.country,
-    #                          'party': dst.party,
-    #                          'organization': dst.organization,
-    #                          'protocol&port': protocol_p,
-    #                          'encryption': encrypted})
-    #     result_csv_file.close()
-    # print("Results written to \"" + out_csv + "\"")
+
+    raw_files = []
+    index = 0
+    # Create the groups to run analyze.py with processes
+    while index < num_proc:
+        raw_files.append([])
+        index += 1
+
+    index = 0
+    # Split the pcap files into num_proc groups
+    for root, dirs, files in os.walk(dir_name):
+        for filename in files:
+            if filename.endswith("pcap") and not filename.startswith("."):
+                raw_files[index].append(root + "/" + filename)
+                index += 1
+                if index >= num_proc:
+                    index = 0
+
+    print("Analyzing input pcap files...")
+    procs = []
+    tmp_csv = args.fig_dir + "/" + company + "_tmp.csv"
+
+    # if the tmp csv doesn't exist, create it with the header
+    # analyze.py isn't threadsafe, so this prevents more than 1 row of headers being written
+    if not os.path.isdir(os.path.dirname(tmp_csv)):
+        os.system("mkdir -pv " + os.path.dirname(tmp_csv))
+
+    if not os.path.exists(tmp_csv):
+        with open(tmp_csv, "w+") as f:
+            f.write("device,ip,host,host_full,traffic_snd,traffic_rcv,packet_snd,packet_rcv,"
+                    "country,party,lab,experiment,network,input_file,organization\n")
+
+    # run analyze.py with num_proc processes
+    for files in raw_files:
+        p = Process(target=run_dest_pipeline, args=(files, mac, tmp_csv))
+        procs.append(p)
+        p.start()
+
+    for p in procs:
+        p.join()
+
+    # characterize the parties
+    print("\nCharacterizing the parties...")
+    result = idtpt.run_extract_third_parties(tmp_csv, script_dir, company)
+
+    # check if the traffic is encrypted
+    print("Analyzing traffic encryption...")
+    file_list = []
+    for files in raw_files:
+        file_list.extend(files)
+    # result is a list of DestinationPro that
+    # contains all the info
+    result = ptals.run(file_list=file_list,
+                       device_mac=mac,
+                       script_dir=script_dir,
+                       previous_info=result)
+
+    out_csv = args.out_csv
+    # write the result to a csv file
+    out_csv_dir = os.path.dirname(out_csv)
+    if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
+        os.system("mkdir -pv " + out_csv_dir)
+
+    with open(file=out_csv, mode='w') as result_csv_file:
+        fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
+                      'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
+                      'party', 'organization', 'protocol&port', 'encryption')
+        writer = csv.DictWriter(result_csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for dp in result:
+            dst = dp.host
+            pro = dp.protocol_port
+            send = dp.snd
+            received = dp.rcv
+            p_snd = dp.p_snd
+            p_rcv = dp.p_rcv
+            encrypted = protocol_encrypted_dict[pro.encrypted]
+            protocol_p = pro.protocol_port
+            if protocol_p in protocol_details:
+                protocol_p = protocol_details[protocol_p]
+            writer.writerow({'ip': dst.ip,
+                             'host': dst.host,
+                             'host_full': dst.host_full,
+                             'traffic_snd': send,
+                             'traffic_rcv': received,
+                             'packet_snd': p_snd,
+                             'packet_rcv': p_rcv,
+                             'country': dst.country,
+                             'party': dst.party,
+                             'organization': dst.organization,
+                             'protocol&port': protocol_p,
+                             'encryption': encrypted})
+        result_csv_file.close()
+    print("Results written to \"" + out_csv + "\"")
 
     # analyze the percentage of each party in all hosts and the amount of traffic
     # sent to each party, and generate the plots
@@ -286,9 +286,9 @@ if __name__ == "__main__":
                                    fig_dir=args.fig_dir, dst_type=dst_type,
                                    plot_type=plot_type)
 
-    # # analyze the protocol and ports use; calculate the amount of traffic sent to
-    # # each destination and protocols, and visualizing the results as plots
-    # print("Calculating protocol percentages for encryption analysis and generating plots...")
-    # vis_pro.run(result=result, company=company, fig_dir=args.fig_dir)
+    # analyze the protocol and ports use; calculate the amount of traffic sent to
+    # each destination and protocols, and visualizing the results as plots
+    print("Calculating protocol percentages for encryption analysis and generating plots...")
+    vis_pro.run(result=result, company=company, fig_dir=args.fig_dir)
 
     print("Analysis finished.")
