@@ -27,8 +27,8 @@ host_name_too_long = {"0": 'other first party',
 
 
 def calculate_party_percentage(csv_filename: str, company: str,
-                               fig_dir: str, dst_type: str,
-                               plot_type: str):
+                               fig_dir: str, dst_types: list,
+                               plot_types: list, linear: bool):
     party_sld_traffic = {"0": {}, "1": {}, "2": {},
                          "-1": {}, "2.5": {}, "3": {}}
     party_fqdn_traffic = {"0": {}, "1": {}, "2": {},
@@ -62,209 +62,215 @@ def calculate_party_percentage(csv_filename: str, company: str,
                 else:
                     party_org_traffic[current_party][current_domain_org] = size
 
-    if plot_type == "PiePlot":
-        if dst_type == "sld":
-            # plot the percentage of different parties - destinations(SLD)
-            prp.pie_plot_percentage(party_dict=party_sld_traffic,
-                                    title="The percentage of first, support and "
-                                          "third parties in all destination SLDs ("
-                                          + company + " device)",
-                                    save_name=fig_dir + "/" + company
-                                              + "_device_party_SLDs_pie.png",
-                                    name_dict=party_name_dict)
+    def make_plot(plot_type, dst_type):
+        if plot_type == "pieplot":
+            if dst_type == "sld":
+                # plot the percentage of different parties - destinations(SLD)
+                prp.pie_plot_percentage(party_dict=party_sld_traffic,
+                                        title="The percentage of first, support and "
+                                              "third parties in all destination SLDs ("
+                                              + company + " device)",
+                                        save_name=fig_dir + "/" + company
+                                                  + "_device_parties_pie_SLD.png",
+                                        name_dict=party_name_dict)
 
-            # write all the sld by party for the device
-            sld_filename = fig_dir + "/" + company + "_all_sld.txt"
-            write_hosts_by_party(party_dict=party_sld_traffic, fname=sld_filename)
-            print("    Second level domains written to \"" + sld_filename + "\"")
+                # write all the sld by party for the device
+                sld_filename = fig_dir + "/" + company + "_all_sld.txt"
+                write_hosts_by_party(party_dict=party_sld_traffic, fname=sld_filename)
+                print("    Second level domains written to \"" + sld_filename + "\"")
 
-            # plot traffic sent to different parties - destinations(SLD)
-            for p in party_bar_dict:
-                index = party_index_dict[p]
-                if party_sld_traffic[index].__len__() != 0:
-                    prp.plot_traffic_dst(party_hosts_traffic=party_sld_traffic,
-                                         party_bar_plot=party_bar_dict[p],
-                                         save_name=fig_dir + "/" + company + "_"
-                                                   + p.split()[0] + "_party_SLD_traffic_pie.png",
-                                         title="The percentage of traffic sent "
-                                               "to each destination SLD ("
-                                               + company + " device/in bytes)",
-                                         name_dict=party_name_dict,
-                                         third_party_color=party_color_dict[party_bar_dict[p]],
-                                         host_name_too_long=host_name_too_long,
-                                         fig_h=20,
-                                         fig_w=14,
-                                         fond_s=18)
-        elif dst_type == "fqdn":
-            # plot the percentage of different parties - destinations(FQDN)
-            prp.pie_plot_percentage(party_dict=party_fqdn_traffic,
-                                    title="The percentage of first, support and "
-                                          "third parties in all destination FQDNs ("
-                                          + company + " device)",
-                                    save_name=fig_dir + "/" + company
-                                              + "_device_party_FQDNs_pie.png",
-                                    name_dict=party_name_dict)
+                # plot traffic sent to different parties - destinations(SLD)
+                for p in party_bar_dict:
+                    index = party_index_dict[p]
+                    if party_sld_traffic[index].__len__() != 0:
+                        prp.plot_traffic_dst(party_hosts_traffic=party_sld_traffic,
+                                             party_bar_plot=party_bar_dict[p],
+                                             save_name=fig_dir + "/" + company + "_pie_SLD_"
+                                                       + p.split()[0] + "_party_traffic.png",
+                                             title="The percentage of traffic sent "
+                                                   "to each destination SLD ("
+                                                   + company + " device/in bytes)",
+                                             name_dict=party_name_dict,
+                                             third_party_color=party_color_dict[party_bar_dict[p]],
+                                             host_name_too_long=host_name_too_long,
+                                             fig_h=20,
+                                             fig_w=14,
+                                             fond_s=18)
+            elif dst_type == "fqdn":
+                # plot the percentage of different parties - destinations(FQDN)
+                prp.pie_plot_percentage(party_dict=party_fqdn_traffic,
+                                        title="The percentage of first, support and "
+                                              "third parties in all destination FQDNs ("
+                                              + company + " device)",
+                                        save_name=fig_dir + "/" + company
+                                                  + "_device_parties_pie_FQDN.png",
+                                        name_dict=party_name_dict)
 
-            # write all the FQDN by party for the device
-            fqdn_filename = fig_dir + "/" + company + "_all_fqdn.txt"
-            write_hosts_by_party(party_dict=party_fqdn_traffic, fname=fqdn_filename)
-            print("    Fully qualified domains written to \"" + fqdn_filename + "\"")
+                # write all the FQDN by party for the device
+                fqdn_filename = fig_dir + "/" + company + "_all_fqdn.txt"
+                write_hosts_by_party(party_dict=party_fqdn_traffic, fname=fqdn_filename)
+                print("    Fully qualified domains written to \"" + fqdn_filename + "\"")
 
-            # plot traffic sent to different parties - destinations(FQDN)
-            for p in party_bar_dict:
-                index = party_index_dict[p]
-                if party_fqdn_traffic[index].__len__() != 0:
-                    prp.plot_traffic_dst(party_hosts_traffic=party_fqdn_traffic,
-                                         party_bar_plot=party_bar_dict[p],
-                                         save_name=fig_dir + "/" + company + "_"
-                                                   + p.split()[0]
-                                                   + "_party_FQDN_traffic_pie.png",
-                                         title="The percentage of traffic sent "
-                                               "to each destination FQDN ("
-                                               + company + " device/in bytes)",
-                                         name_dict=party_name_dict,
-                                         third_party_color=party_color_dict[party_bar_dict[p]],
-                                         host_name_too_long=host_name_too_long,
-                                         fig_h=23,
-                                         fig_w=16,
-                                         fond_s=15)
-        elif dst_type == "org":
-            # plot the percentage of different parties - organizations(ORG)
-            prp.pie_plot_percentage(party_dict=party_org_traffic,
-                                    title="The percentage of first, support and "
-                                          "third parties in all destination Organizations ("
-                                          + company + " device)",
-                                    save_name=fig_dir + "/" + company
-                                              + "_device_party_ORGs_pie.png",
-                                    name_dict=party_name_dict)
+                # plot traffic sent to different parties - destinations(FQDN)
+                for p in party_bar_dict:
+                    index = party_index_dict[p]
+                    if party_fqdn_traffic[index].__len__() != 0:
+                        prp.plot_traffic_dst(party_hosts_traffic=party_fqdn_traffic,
+                                             party_bar_plot=party_bar_dict[p],
+                                             save_name=fig_dir + "/" + company + "_pie_FQDN_"
+                                                       + p.split()[0] + "_party_traffic.png",
+                                             title="The percentage of traffic sent "
+                                                   "to each destination FQDN ("
+                                                   + company + " device/in bytes)",
+                                             name_dict=party_name_dict,
+                                             third_party_color=party_color_dict[party_bar_dict[p]],
+                                             host_name_too_long=host_name_too_long,
+                                             fig_h=23,
+                                             fig_w=16,
+                                             fond_s=15)
+            elif dst_type == "org":
+                # plot the percentage of different parties - organizations(ORG)
+                prp.pie_plot_percentage(party_dict=party_org_traffic,
+                                        title="The percentage of first, support and "
+                                              "third parties in all destination Organizations ("
+                                              + company + " device)",
+                                        save_name=fig_dir + "/" + company
+                                                  + "_device_parties_pie_ORG.png",
+                                        name_dict=party_name_dict)
 
-            # write all the ORGs by party for the device
-            org_filename = fig_dir + "/" + company + "_all_org.txt"
-            write_hosts_by_party(party_dict=party_org_traffic, fname=org_filename)
-            print("    Organizations written to \"" + org_filename + "\"")
+                # write all the ORGs by party for the device
+                org_filename = fig_dir + "/" + company + "_all_org.txt"
+                write_hosts_by_party(party_dict=party_org_traffic, fname=org_filename)
+                print("    Organizations written to \"" + org_filename + "\"")
 
-            # plot traffic sent to different parties - destinations(ORG)
-            for p in party_bar_dict:
-                index = party_index_dict[p]
-                if party_org_traffic[index].__len__() != 0:
-                    prp.plot_traffic_dst(party_hosts_traffic=party_org_traffic,
-                                         party_bar_plot=party_bar_dict[p],
-                                         save_name=fig_dir + "/" + company + "_"
-                                                   + p.split()[0]
-                                                   + "_party_ORG_traffic_pie.png",
-                                         title="The percentage of traffic sent "
-                                               "to each destination ORG ("
-                                               + company + " device/in bytes)",
-                                         name_dict=party_name_dict,
-                                         third_party_color=party_color_dict[party_bar_dict[p]],
-                                         host_name_too_long=host_name_too_long,
-                                         fig_h=20,
-                                         fig_w=14,
-                                         fond_s=18)
-    elif plot_type == "BarHPlot":
-        if dst_type == "sld":
-            # plot traffic sent to different parties - destinations(SLD)
-            for p in party_bar_dict:
-                index = party_index_dict[p]
-                all_hosts = party_sld_traffic[index]
-                party_name = party_index_dict[p]
-                if all_hosts.__len__() != 0:
-                    other_h_t = 0
-                    too_small_h = []
-                    for host in all_hosts:
-                        current_t = all_hosts[host]
-                        all_hosts_len = all_hosts.__len__()
-                        all_t = int(np.array(list(all_hosts.values())).sum())
-                        if all_hosts_len > 20 and \
-                                ((p != "Advertiser" and current_t / all_t <= 0.002)
-                                 or (p == "Advertiser" and current_t / all_t <= 0.0001)):
-                            other_h_t += current_t
-                            too_small_h.append(host)
-                    if other_h_t > 0:
-                        all_hosts[host_name_too_long[party_name]] = other_h_t
-                        for h in too_small_h:
-                            del all_hosts[h]
-                    brp.bar_plot_horizontal(data=list(all_hosts.values()),
-                                            names=list(all_hosts.keys()),
-                                            height=24,
-                                            wide=18,
-                                            title="The percentage of traffic sent "
-                                                  "to each destination SLD (" +
-                                                  company + "/" + p + ")",
-                                            color_p=party_color_dict[party_bar_dict[p]],
-                                            num_name="Amount of traffic (Bytes)",
-                                            save_name=fig_dir + "/" + company + "_"
-                                                      + p.split()[0]
-                                                      + "_party_SLD_traffic_bar.png")
-        elif dst_type == "fqdn":
-            # plot traffic sent to different parties - destinations(FQDN)
-            for p in party_bar_dict:
-                index = party_index_dict[p]
-                all_hosts = party_fqdn_traffic[index]
-                party_name = party_index_dict[p]
-                if all_hosts.__len__() != 0:
-                    other_h_t = 0
-                    too_small_h = []
-                    for host in all_hosts:
-                        current_t = all_hosts[host]
-                        all_hosts_len = all_hosts.__len__()
-                        all_t = int(np.array(list(all_hosts.values())).sum())
-                        if all_hosts_len > 20 and \
-                                ((p != "Advertiser" and current_t / all_t <= 0.00005)
-                                 or (p == "Advertiser" and current_t / all_t <= 0.0001)):
-                            other_h_t += current_t
-                            too_small_h.append(host)
-                    if other_h_t > 0:
-                        all_hosts[host_name_too_long[party_name]] = other_h_t
-                        for h in too_small_h:
-                            del all_hosts[h]
-                    brp.bar_plot_horizontal(data=list(all_hosts.values()),
-                                            names=list(all_hosts.keys()),
-                                            height=24,
-                                            wide=18,
-                                            title="The percentage of traffic sent "
-                                                  "to each destination FQDN (" +
-                                                  company + "/" + p + ")",
-                                            color_p=party_color_dict[party_bar_dict[p]],
-                                            num_name="Amount of traffic (Bytes)",
-                                            save_name=fig_dir + "/" + company + "_"
-                                                      + p.split()[0]
-                                                      + "_party_FQDN_traffic_bar.png")
-        elif dst_type == "org":
-            # plot traffic sent to different parties - destinations(ORG)
-            for p in party_bar_dict:
-                index = party_index_dict[p]
-                all_hosts = party_org_traffic[index]
-                party_name = party_index_dict[p]
-                if all_hosts.__len__() != 0:
-                    other_h_t = 0
-                    too_small_h = []
-                    for host in all_hosts:
-                        current_t = all_hosts[host]
-                        all_hosts_len = all_hosts.__len__()
-                        all_t = int(np.array(list(all_hosts.values())).sum())
-                        if all_hosts_len > 20 and \
-                                ((p != "Advertiser" and current_t / all_t <= 0.002)
-                                 or (p == "Advertiser" and current_t / all_t <= 0.0001)):
-                            other_h_t += current_t
-                            too_small_h.append(host)
-                    if other_h_t > 0:
-                        all_hosts[host_name_too_long[party_name]] = other_h_t
-                        for h in too_small_h:
-                            del all_hosts[h]
-                    brp.bar_plot_horizontal(data=list(all_hosts.values()),
-                                            names=list(all_hosts.keys()),
-                                            height=24,
-                                            wide=18,
-                                            title="The percentage of traffic sent "
-                                                  "to each destination ORG (" +
-                                                  company + "/" + p + ")",
-                                            color_p=party_color_dict[party_bar_dict[p]],
-                                            num_name="Amount of traffic (Bytes)",
-                                            save_name=fig_dir + "/" + company
-                                                      + "_" + p.split()[0]
-                                                      + "_party_ORG_traffic_bar.png")
+                # plot traffic sent to different parties - destinations(ORG)
+                for p in party_bar_dict:
+                    index = party_index_dict[p]
+                    if party_org_traffic[index].__len__() != 0:
+                        prp.plot_traffic_dst(party_hosts_traffic=party_org_traffic,
+                                             party_bar_plot=party_bar_dict[p],
+                                             save_name=fig_dir + "/" + company + "_pie_ORG_"
+                                                       + p.split()[0] + "_party_traffic.png",
+                                             title="The percentage of traffic sent "
+                                                   "to each destination ORG ("
+                                                   + company + " device/in bytes)",
+                                             name_dict=party_name_dict,
+                                             third_party_color=party_color_dict[party_bar_dict[p]],
+                                             host_name_too_long=host_name_too_long,
+                                             fig_h=20,
+                                             fig_w=14,
+                                             fond_s=18)
+        elif plot_type == "barhplot":
+            if dst_type == "sld":
+                # plot traffic sent to different parties - destinations(SLD)
+                for p in party_bar_dict:
+                    index = party_index_dict[p]
+                    all_hosts = party_sld_traffic[index]
+                    party_name = party_index_dict[p]
+                    if all_hosts.__len__() != 0:
+                        other_h_t = 0
+                        too_small_h = []
+                        for host in all_hosts:
+                            current_t = all_hosts[host]
+                            all_hosts_len = all_hosts.__len__()
+                            all_t = int(np.array(list(all_hosts.values())).sum())
+                            if all_hosts_len > 20 and \
+                                    ((p != "Advertiser" and current_t / all_t <= 0.002)
+                                     or (p == "Advertiser" and current_t / all_t <= 0.0001)):
+                                other_h_t += current_t
+                                too_small_h.append(host)
+                        if other_h_t > 0:
+                            all_hosts[host_name_too_long[party_name]] = other_h_t
+                            for h in too_small_h:
+                                del all_hosts[h]
+                        brp.bar_plot_horizontal(data=list(all_hosts.values()),
+                                                names=list(all_hosts.keys()),
+                                                height=24,
+                                                wide=18,
+                                                title="The percentage of traffic sent "
+                                                      "to each destination SLD (" +
+                                                      company + "/" + p + ")",
+                                                color_p=party_color_dict[party_bar_dict[p]],
+                                                num_name="Amount of traffic (Bytes)",
+                                                save_name=fig_dir + "/" + company + "_bar_SLD_"
+                                                          + p.split()[0] + "_party_traffic.png")
+            elif dst_type == "fqdn":
+                # plot traffic sent to different parties - destinations(FQDN)
+                for p in party_bar_dict:
+                    index = party_index_dict[p]
+                    all_hosts = party_fqdn_traffic[index]
+                    party_name = party_index_dict[p]
+                    if all_hosts.__len__() != 0:
+                        other_h_t = 0
+                        too_small_h = []
+                        for host in all_hosts:
+                            current_t = all_hosts[host]
+                            all_hosts_len = all_hosts.__len__()
+                            all_t = int(np.array(list(all_hosts.values())).sum())
+                            if all_hosts_len > 20 and \
+                                    ((p != "Advertiser" and current_t / all_t <= 0.00005)
+                                     or (p == "Advertiser" and current_t / all_t <= 0.0001)):
+                                other_h_t += current_t
+                                too_small_h.append(host)
+                        if other_h_t > 0:
+                            all_hosts[host_name_too_long[party_name]] = other_h_t
+                            for h in too_small_h:
+                                del all_hosts[h]
+                        brp.bar_plot_horizontal(data=list(all_hosts.values()),
+                                                names=list(all_hosts.keys()),
+                                                height=24,
+                                                wide=18,
+                                                title="The percentage of traffic sent "
+                                                      "to each destination FQDN (" +
+                                                      company + "/" + p + ")",
+                                                color_p=party_color_dict[party_bar_dict[p]],
+                                                num_name="Amount of traffic (Bytes)",
+                                                save_name=fig_dir + "/" + company + "_bar_FQDN_"
+                                                          + p.split()[0] + "_party_traffic.png")
+            elif dst_type == "org":
+                # plot traffic sent to different parties - destinations(ORG)
+                for p in party_bar_dict:
+                    index = party_index_dict[p]
+                    all_hosts = party_org_traffic[index]
+                    party_name = party_index_dict[p]
+                    if all_hosts.__len__() != 0:
+                        other_h_t = 0
+                        too_small_h = []
+                        for host in all_hosts:
+                            current_t = all_hosts[host]
+                            all_hosts_len = all_hosts.__len__()
+                            all_t = int(np.array(list(all_hosts.values())).sum())
+                            if all_hosts_len > 20 and \
+                                    ((p != "Advertiser" and current_t / all_t <= 0.002)
+                                     or (p == "Advertiser" and current_t / all_t <= 0.0001)):
+                                other_h_t += current_t
+                                too_small_h.append(host)
+                        if other_h_t > 0:
+                            all_hosts[host_name_too_long[party_name]] = other_h_t
+                            for h in too_small_h:
+                                del all_hosts[h]
+                        brp.bar_plot_horizontal(data=list(all_hosts.values()),
+                                                names=list(all_hosts.keys()),
+                                                height=24,
+                                                wide=18,
+                                                title="The percentage of traffic sent "
+                                                      "to each destination ORG (" +
+                                                      company + "/" + p + ")",
+                                                color_p=party_color_dict[party_bar_dict[p]],
+                                                num_name="Amount of traffic (Bytes)",
+                                                save_name=fig_dir + "/" + company + "_bar_ORG_"
+                                                          + p.split()[0] + "_party_traffic.png")
 
+
+    if linear:
+        for plot_type, dst_type in zip(plot_types, dst_types):
+            make_plot(plot_type, dst_type)
+
+    else:
+        for plot_type in plot_types:
+            for dst_type in dst_types:
+                make_plot(plot_type, dst_type)
+        
 
 def write_hosts_by_party(party_dict, fname):
     with open(fname, "w+") as f:

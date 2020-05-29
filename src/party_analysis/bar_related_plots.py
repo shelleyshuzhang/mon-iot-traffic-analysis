@@ -41,4 +41,6 @@ def bar_plot_horizontal(data: list, names: list, height, wide, title, color_p, n
     # # Customize title, set position, allow space on top of plot for title
     ax.set_title(ax.get_title(), fontsize=20, alpha=color_trans, ha='center')
 
-    plt.savefig(save_name + '.png', bbox_inches='tight', dpi=300)
+    plt.savefig(save_name, bbox_inches='tight', dpi=300)
+    print("    Plot saved to \"%s\"" % save_name)
+
