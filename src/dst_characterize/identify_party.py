@@ -220,6 +220,6 @@ def find_third_party_using_given_csv(csv_file, script_dir):
                     current_domain_full = "https://" + current_domain + "/"
                     if ad_rules.should_block(current_domain_full):
                         ad_list.add(current_domain)
-    
+                        
     return ad_list
 

@@ -27,7 +27,6 @@ dst_info = {}
 protocol_info = {}
 filenames = []
 
-
 def run(dir_name, device_mac, script_dir, previous_info, num_proc):
     global filenames
 
@@ -196,4 +195,3 @@ def get_pak_ip(packet, d_mac):
             return packet[IP].src, 'snd'
     else:
         return 'non-ip', 'none'
-
