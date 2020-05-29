@@ -1,5 +1,6 @@
 import copy
 import csv
+import os
 
 from multiprocessing import Process
 from multiprocessing import Manager
@@ -27,7 +28,7 @@ protocol_info = {}
 filenames = []
 
 
-def run(file_list, device_mac, script_dir, previous_info, num_proc):
+def run(dir_name, device_mac, script_dir, previous_info, num_proc):
     global filenames
 
     print("    Reading the destination info...")
@@ -43,11 +44,13 @@ def run(file_list, device_mac, script_dir, previous_info, num_proc):
         results.append([])
 
     index = 0
-    for file_name in file_list:
-        filenames[index].append(file_name)
-        index += 1
-        if index >= num_proc:
-            index = 0
+    for root, dirs, files in os.walk(dir_name):
+        for filename in files:
+            if filename.endswith(".pcap") and not filename.startswith("."):
+                filenames[index].append(root + "/" + filename)
+                index += 1
+                if index >= num_proc:
+                    index = 0
     
     procs = []
     pid = 0
