@@ -22,14 +22,12 @@ company_name_dict = {"google": "Google LLC", "amazon": "Amazon.com Inc."}
 # find all the third parties in the list of pcap
 # files and write them to a txt file
 def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
-    # print("start")
     all_ads = set()
 
     # fina all the third parties using
     # the csv file we have
     all_ads.union(find_third_party_using_given_csv(input_csv_file, script_dir))
 
-    # print("1")
     # read each line from the input csv file
     result = {key: list() for key in options}
     max_host = ''
@@ -59,7 +57,6 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
                 result[title].append(row[title])
                 index += 1
 
-    #print("2")
     general_party_info = {'0': set(),
                           '1': set(),
                           '2': set(),
@@ -82,7 +79,6 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         else:
             general_party_info[current_party].add(line.split("\n")[0])
 
-    #print("3")
     general_party_info['2.5'].union(all_ads)
 
     # if the user does not provide the first party company,
@@ -108,7 +104,6 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
     index = 0
     host_org = {}
     for host in host_list:
-        #print("a", index)
         party = identify_party(host=host, party_info=general_party_info)
         if party != "no party":
             result['party'][index] = party_dict[party]
@@ -126,7 +121,6 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         new_party = result['party'][index]
         # if it's a first party and the first party is amazon and google,
         # we already know the name of the org
-        #print("b", index, host)
         if new_party == 'First party' and company in company_name_dict:
             result['organization'][index] = company_name_dict[company]
         elif new_party != 'Local' and new_party != 'Physical':
@@ -153,20 +147,16 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             except subprocess.CalledProcessError:
                 result['organization'][index] = host.split(".")[0].capitalize()
         index += 1
-    #print("5")
     return result
 
 
 # get the org of a host/IP by using who is
 # server to get its SLD
 def get_org_using_who_is_server(host):
-    # print("get org host:", host)
     who_is_answer = check_output(['whois', host])
     ls: str = who_is_answer.decode("utf-8")
     ls: list = ls.splitlines()
     org = ""
-    # print("len", len(ls))
-    # simpler way of doing below
     for s in ls:
         if s.startswith("Registrant Organization: "):
             org = s[25:]
@@ -216,7 +206,6 @@ def find_third_party_using_given_csv(csv_file, script_dir):
 
     ad_list = set()
 
-    # print("a")
     with open(csv_file, mode="r") as csv_file1:
         csv_reader = csv.DictReader(csv_file1)
         visited_domains = []  # don't need to run domains through ad rules more than once
@@ -226,7 +215,6 @@ def find_third_party_using_given_csv(csv_file, script_dir):
                 visited_domains.append(current_domain)
                 current_domain_full = "http://" + current_domain + "/"
                 if ad_rules.should_block(current_domain_full):
-                    # print("asdfasdfasdfasdf")
                     ad_list.add(current_domain)
                 else:
                     current_domain_full = "https://" + current_domain + "/"

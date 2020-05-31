@@ -28,7 +28,9 @@ There are several options to choose from, which are summarized below:
 
 `-m MAC_ADDR` - The MAC address of the device that generated the data in `PCAP_DIR`.
 
-`-s IMC_DIR` - The path to the main directory (`intl-iot/`) containing the code accompanying the paper titled "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). The code can be found here: https://github.com/NEU-SNS/intl-iot. Destination analysis is performed using this code.
+`-v IN_CSV` - The path to the output CSV filename of running destination analysis of the IMC'19 code on the pcap files in `PCAP_DIR`. **Either this option or the `-s` option is required.** If the CSV exists, it is recommended that this option be used instead of the `-s` option. If the CSV does not exist, use the `-s` option to generate the CSV.
+
+`-s IMC_DIR` - The path to the main directory (`intl-iot/`) containing the code accompanying the paper titled "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). The code can be found here: https://github.com/NEU-SNS/intl-iot. Destination analysis is performed using this code. **Either this option or the `-v` option is required.**
 
 #### Optional arguments:
 

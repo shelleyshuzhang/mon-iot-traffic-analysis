@@ -278,3 +278,4 @@ def write_hosts_by_party(party_dict, fname):
             f.write(p + " party dst:\n")
             for sld in party_dict[p]:
                 f.write(sld + "\n")
+
