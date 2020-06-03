@@ -3,7 +3,6 @@ import re
 # github for adblock parser: https://github.com/scrapinghub/adblockparser
 # pip install adblockparser
 import adblockparser
-
 from subprocess import check_output
 import subprocess
 
@@ -56,6 +55,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
                 title = options[index]
                 result[title].append(row[title])
                 index += 1
+    input_file.close()
 
     general_party_info = {'0': set(),
                           '1': set(),
@@ -78,6 +78,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             continue
         else:
             general_party_info[current_party].add(line.split("\n")[0])
+    file1.close()
 
     general_party_info['2.5'].union(all_ads)
 
@@ -102,7 +103,6 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             general_party_info['0'].add(h)
 
     index = 0
-    host_org = {}
     for host in host_list:
         party = identify_party(host=host, party_info=general_party_info)
         if party != "no party":
@@ -124,28 +124,27 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         if new_party == 'First party' and company in company_name_dict:
             result['organization'][index] = company_name_dict[company]
         elif new_party != 'Local' and new_party != 'Physical':
+            # get organization using who is and save host/org to dict
             try:
-                org = ""
-                if host in host_org:  # use organization in dict if host exists in the dict
-                    org = host_org[host]
-                else:  # get organzation using whois and save host/org to dict
-                    org = get_org_using_who_is_server(host)
-                    host_org[host] = org
-
-                org = org.lower()
-                # if it is amazon or google
-                if company in org and company in company_name_dict:
-                    result['organization'][index] = company_name_dict[company]
-                # if the org is empty, use the sld
-                elif org == "" or org == " " or org == "n/a" \
-                        or org.upper() == "REDACTED FOR PRIVACY":
-                    result['organization'][index] = host.split(".")[0].capitalize()
-                # else, use the org
-                else:
-                    org = org.split(", ")[0]
-                    result['organization'][index] = org.capitalize()
+                org = get_org_using_who_is_server(host)
             except subprocess.CalledProcessError:
+                org = ""
+
+            org = org.lower()
+            # if it is amazon or google
+            if company in org and company in company_name_dict:
+                result['organization'][index] = company_name_dict[company]
+            # if the org is empty, use the sld
+            elif org == "" or org == " " \
+                    or org == "n/a" or org == "website" \
+                    or org.__contains__("privacy") \
+                    or org.__contains__("whoisguard") \
+                    or org.__contains__("redacted"):
                 result['organization'][index] = host.split(".")[0].capitalize()
+            # else, use the org
+            else:
+                org = org.split(", ")[0]
+                result['organization'][index] = org.capitalize()
         index += 1
     return result
 
@@ -196,13 +195,14 @@ def read_party_info(filename, party_info):
         line = line.split("\n")[0]
         party_info['0'].add(line)
         party_info['1'].discard(line)
+    file.close()
     return party_info
 
 
 def find_third_party_using_given_csv(csv_file, script_dir):
-    ad_rules = []
     with open(script_dir + '/dst_characterize/easylist_adblock.txt', 'r') as f:
         ad_rules = adblockparser.AdblockRules(f.readlines())
+    f.close()
 
     ad_list = set()
 
@@ -220,6 +220,5 @@ def find_third_party_using_given_csv(csv_file, script_dir):
                     current_domain_full = "https://" + current_domain + "/"
                     if ad_rules.should_block(current_domain_full):
                         ad_list.add(current_domain)
-                        
+    csv_file1.close()
     return ad_list
-

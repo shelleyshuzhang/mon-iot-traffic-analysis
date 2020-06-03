@@ -7,7 +7,7 @@ import argparse
 from dst_characterize import identify_party as idtpt
 from party_analysis import visualization_parties as vis
 from protocol_analysis import protocol_analysis as ptals
-from protocol_analysis import visualization as vis_pro
+from protocol_analysis import visualization_protocols as vis_pro
 
 software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
 current_location = "/Users/zhangshu/PycharmProjects/neu_mon-iot-_network_traffic_analysis"
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     dst_types = [dst_type.strip().lower() for dst_type in dst_types]
     plot_types = args.plot_types.split(",")
     plot_types = [plot_type.strip().lower() for plot_type in plot_types]
-    if not args.linear: #remove duplicates if not generating plots linearly
+    if not args.linear:  # remove duplicates if not generating plots linearly
         dst_types = list(dict.fromkeys(dst_types))
         plot_types = list(dict.fromkeys(plot_types))
 
@@ -237,8 +237,7 @@ if __name__ == "__main__":
         print_usage(1)
     # End error checking
 
-
-    #Run destination analysis if necessary
+    # Run destination analysis if necessary
     in_csv = args.in_csv
     if in_csv == "":
         in_csv = args.fig_dir + "/" + company + "_tmp.csv"
@@ -253,7 +252,7 @@ if __name__ == "__main__":
 
     # check if the traffic is encrypted
     print("Analyzing traffic encryption...")
-    
+
     # result is a list of DestinationPro that
     # contains all the info
     result = ptals.run(dir_name=dir_name,
@@ -311,7 +310,8 @@ if __name__ == "__main__":
     # analyze the protocol and ports use; calculate the amount of traffic sent to
     # each destination and protocols, and visualizing the results as plots
     print("Calculating protocol percentages for encryption analysis and generating plots...")
-    vis_pro.run(result=result, company=company, fig_dir=args.fig_dir)
+    vis_pro.calculate_encrypted_dst_percentage(previous_data=result, company=company,
+                                               fig_dir=args.fig_dir, dst_types=dst_types,
+                                               plot_types=plot_types, linear=args.linear)
 
     print("Analysis finished.")
-

@@ -88,7 +88,6 @@ def dst_protocol_analysis(pid, d_mac, result_list):
             if p_ip != 'non-ip' and p_ip in dst_info:
                 p_protocol = get_pak_protocol(packet=p, d_mac=d_mac)
                 host = dst_info[p_ip]
-                prot = None
                 if p_protocol in protocol_info:
                     prot = protocol_info[p_protocol]
                 else:

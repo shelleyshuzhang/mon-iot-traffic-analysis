@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-from protocol_analysis import visualization as vis
+from protocol_analysis import visualization_protocols as vis
 
 
 def bar_plot_horizontal(data: list, names: list, height, wide, title, color_p, num_name, save_name):
@@ -30,9 +30,9 @@ def bar_plot_horizontal(data: list, names: list, height, wide, title, color_p, n
     palette = [sub_palette(color_index) for color_index in range(0, stop_index, 10)]
     df[num_name].plot(kind='barh', ax=ax, alpha=color_trans,
                       legend=labels, color=palette,
-                      edgecolor='w', xlim=(0, max(df[num_name])),
-                      title=title)
+                      edgecolor='w', title=title)
 
+    plt.xscale('log')
     # Remove grid lines (dotted lines inside plot)
     ax.grid(False)
     # Remove plot frame
@@ -43,4 +43,4 @@ def bar_plot_horizontal(data: list, names: list, height, wide, title, color_p, n
 
     plt.savefig(save_name, bbox_inches='tight', dpi=300)
     print("    Plot saved to \"%s\"" % save_name)
-
+    plt.close()

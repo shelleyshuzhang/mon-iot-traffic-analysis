@@ -73,6 +73,7 @@ def read_dst_csv(file_name):
                         country_info["Abroad"][country] += traffic_rcv
                     else:
                         country_info["Abroad"][country] = traffic_rcv
+    csv_file.close()
     return country_info
 
 
@@ -105,6 +106,7 @@ def read_dst_csv_after_ping(file_name):
                         country_info["US/Local"][country] += traffic_rcv
                     else:
                         country_info["US/Local"][country] = traffic_rcv
+    csv_file.close()
     return country_info
 
 
