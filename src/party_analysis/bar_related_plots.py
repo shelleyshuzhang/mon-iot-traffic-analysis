@@ -2,9 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from protocol_analysis import visualization_protocols as vis
+import gc
 
 
-def bar_plot_horizontal(data: list, names: list, height, width, title, color_p, num_name, save_name):
+def bar_h_plot(data: list, names: list, title, color_p, fig_dpi, num_name, save_name):
     data_total = np.array(data).sum()
     labels = []
     for d in data:
@@ -18,7 +19,7 @@ def bar_plot_horizontal(data: list, names: list, height, width, title, color_p, 
 
     data_d = {num_name: pd.Series(data, index=names)}
 
-    fig = plt.figure(figsize=(width, height))
+    fig = plt.figure(figsize=(24, 18))
     plt.rcParams['font.size'] = 16
     ax = fig.add_subplot(111)
     df = pd.DataFrame(data_d)
@@ -40,7 +41,8 @@ def bar_plot_horizontal(data: list, names: list, height, width, title, color_p, 
 
     # # Customize title, set position, allow space on top of plot for title
     ax.set_title(ax.get_title(), fontsize=20, alpha=color_trans, ha='center')
-
-    plt.savefig(save_name, bbox_inches='tight', dpi=300)
+    plt.savefig(save_name, bbox_inches='tight', dpi=fig_dpi)
     print("    Plot saved to \"%s\"" % save_name)
-    plt.close()
+    plt.close(fig)
+    gc.collect()
+

@@ -3,10 +3,11 @@ from matplotlib.patches import ConnectionPatch
 import numpy as np
 import pandas as pd
 from protocol_analysis import visualization_protocols as vis
+import gc
 
 
-def pie_plot_percentage(party_dict: dict, title, save_name, name_dict):
-    plt.figure(figsize=(10, 6))
+def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):
+    plt.figure(figsize=(20, 14))
     palette = plt.get_cmap('Set1')
     labels = []
     values = []
@@ -30,17 +31,14 @@ def pie_plot_percentage(party_dict: dict, title, save_name, name_dict):
             counterclock=False, shadow=True)
     plt.title(title)
     plt.legend(labels, loc=3)
-    plt.savefig(save_name)
+    plt.savefig(save_name, dpi=fig_dpi)
     print("    Plot saved to \"" + save_name + "\"")
     plt.close()
 
 
-def plot_traffic_dst(party_hosts_traffic: dict, title, save_name,
-                     party_bar_plot: list, name_dict,
-                     third_party_color: list,
-                     host_name_too_long, fig_h,
-                     fig_w, fond_s, empty_parties,
-                     patch_dict):
+def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot: list,
+                     name_dict, third_party_color: list, host_name_too_long, fig_dpi,
+                     empty_parties, patch_dict):
     if empty_parties[0]:
         plt.rcParams['font.size'] = 18
         current = plt.figure(figsize=(20, 14))
@@ -54,8 +52,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name,
         sub2 = current.add_subplot(1, 2, 2)
         sub3 = None
     else:
-        plt.rcParams['font.size'] = fond_s
-        current = plt.figure(figsize=(fig_w, fig_h))
+        plt.rcParams['font.size'] = 18
+        current = plt.figure(figsize=(36, 16))
         sub1 = current.add_subplot(1, 3, 2)
         sub3 = current.add_subplot(1, 3, 3)
         sub2 = current.add_subplot(1, 3, 1)
@@ -142,9 +140,10 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name,
                           legend_pos=(0.95, 1.),
                           patch_dict=patch_dict)
 
-    current.savefig(save_name)
+    current.savefig(save_name, dpi=fig_dpi)
     print("    Plot saved to \"" + save_name + "\"")
     plt.close(current)
+    gc.collect()
 
 
 def plot_bar_attached(sub1, sub2, third_party_color,
