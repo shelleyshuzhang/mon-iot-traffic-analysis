@@ -4,7 +4,7 @@ import numpy as np
 from protocol_analysis import visualization_protocols as vis
 
 
-def bar_plot_horizontal(data: list, names: list, height, wide, title, color_p, num_name, save_name):
+def bar_plot_horizontal(data: list, names: list, height, width, title, color_p, num_name, save_name):
     data_total = np.array(data).sum()
     labels = []
     for d in data:
@@ -18,7 +18,7 @@ def bar_plot_horizontal(data: list, names: list, height, wide, title, color_p, n
 
     data_d = {num_name: pd.Series(data, index=names)}
 
-    fig = plt.figure(figsize=(height, wide))
+    fig = plt.figure(figsize=(width, height))
     plt.rcParams['font.size'] = 16
     ax = fig.add_subplot(111)
     df = pd.DataFrame(data_d)
