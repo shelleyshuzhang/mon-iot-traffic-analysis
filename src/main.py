@@ -64,6 +64,7 @@ Optional arguments:
                 plots; choose from BarHPlot and PiePlot
   -l          generates plots using DST_TYPS and PLT_TYPS linearly instead of using
                 a 2D-array-like style
+  -t DPI      dots per inch (DPI0 of a plot) (Default = 72)
   -n NUM_PROC number of CPU processes to use to run the destination analysis and
                 protocol analysis portions (Default = 1)
   -h          print this usage statement and exit
@@ -128,6 +129,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", dest="dst_types", default="")
     parser.add_argument("-p", dest="plot_types", default="")
     parser.add_argument("-l", dest="linear", action="store_true", default=False)
+    parser.add_argument("-t", dest="dpi", default="72")
     parser.add_argument("-n", dest="num_proc", default="1")
     parser.add_argument("-h", dest="help", action="store_true", default=False)
     args = parser.parse_args()
@@ -233,6 +235,20 @@ if __name__ == "__main__":
         print("%s%s: Error: The number of processes must be a positive integer. Received \"%s\".%s"
               % (RED, path, args.num_proc, END), file=sys.stderr)
 
+    bad_dpi = False
+    try:
+        if int(args.dpi) > 0:
+            dpi = int(args.dpi)
+        else:
+            bad_dpi = True
+    except:
+        bad_dpi = True
+
+    if bad_dpi:
+        errors = True
+        print("%s%s: Error: The DPI must be a positive integer. Received \"%s\".%s"
+              % (RED, path, args.dpi, END), file=sys.stderr)
+
     if errors:
         print_usage(1)
     # End error checking
@@ -303,15 +319,15 @@ if __name__ == "__main__":
     # sent to each party, and generate the plots
     if dst_types != [""] and plot_types != [""]:
         print("Calculating party percentages and generating plots...")
-        vis.calculate_party_percentage(csv_filename=out_csv, company=company,
-                                       fig_dir=args.fig_dir, dst_types=dst_types,
-                                       plot_types=plot_types, linear=args.linear)
+        vis.calc_party_pct(csv_filename=out_csv, company=company, fig_dir=args.fig_dir,
+                           fig_dpi=dpi, dst_types=dst_types, plot_types=plot_types,
+                           linear=args.linear)
 
-    # analyze the protocol and ports use; calculate the amount of traffic sent to
-    # each destination and protocols, and visualizing the results as plots
-    print("Calculating protocol percentages for encryption analysis and generating plots...")
-    vis_pro.calculate_encrypted_dst_percentage(previous_data=result, company=company,
-                                               fig_dir=args.fig_dir, dst_types=dst_types,
-                                               plot_types=plot_types, linear=args.linear)
+        # analyze the protocol and ports use; calculate the amount of traffic sent to
+        # each destination and protocols, and visualizing the results as plots
+        print("Calculating protocol percentages for encryption analysis and generating plots...")
+        vis_pro.calc_encrypted_dst_pct(previous_data=result, company=company,
+                                       fig_dir=args.fig_dir, fig_dpi=dpi, dst_types=dst_types,
+                                       plot_types=plot_types, linear=args.linear)
 
     print("Analysis finished.")
