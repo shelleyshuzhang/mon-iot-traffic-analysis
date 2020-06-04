@@ -19,8 +19,7 @@ protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port:
 # isError is either 0 or 1
 def print_usage(isError):
     if isError:
-        pass
-        #print(c.USAGE_STM, file=sys.stderr)
+        print(c.USAGE_STM, file=sys.stderr)
     else:
         print(c.USAGE_STM)
     exit(isError)
