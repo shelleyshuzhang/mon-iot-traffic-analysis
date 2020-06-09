@@ -1,4 +1,4 @@
-# neu_mon-iot-_network_traffic_analysis
+# Network Traffic Analysis
 
 This script performs network analysis to classify traffic as either first, support, third, local, advertiser, or analytic party traffic. The script also determines the amount of unencrypted traffic and the destinations that this unencrypted traffic is being received from and sent to.
 
@@ -14,7 +14,7 @@ apt install whois
 ```
 
 ## Usage
-Usage: `python3 main.py -i PCAP_DIR -m MAC_ADDR -s IMC_DIR [OPTION]...`
+Usage: `python3 main.py -i PCAP_DIR -m MAC_ADDR {-s IMC_DIR | -v IN_CSV} [OPTION]...`
 
 Example: `python3 main.py -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -s ../intl-iot/ -c amazon -d org,sld -p PiePlot -n 4`
 
@@ -30,9 +30,9 @@ There are several options to choose from, which are summarized below:
 
 `-v IN_CSV` - The path to the output CSV filename of running destination analysis of the IMC'19 code on the pcap files in `PCAP_DIR`. **Either this option or the `-s` option is required.** If the CSV exists, it is recommended that this option be used instead of the `-s` option. If the CSV does not exist, use the `-s` option to generate the CSV.
 
-`-s IMC_DIR` - The path to the main directory (`intl-iot/`) containing the code accompanying the paper titled "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). The code can be found here: https://github.com/NEU-SNS/intl-iot. Destination analysis is performed using this code. **Either this option or the `-v` option is required.**
+`-s IMC_DIR` - The path to the main directory (`intl-iot/`) containing the code accompanying the paper titled "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). The code can be found here: https://github.com/dng24/intl-iot. Destination analysis is performed using this code. **Either this option or the `-v` option is required.**
 
-#### Optional arguments:
+#### Optional Arguments:
 
 `-c DEV_MFR` - The company that created the device that generated the data in `PCAP_DIR`. This is used to identify the first parties. Default is `unknown`.
 
@@ -40,9 +40,9 @@ There are several options to choose from, which are summarized below:
 
 `-o OUT_CSV` - The path to the output CSV file containing the analysis. If the file does not exist, it will be generated. If it exists, the results will be appended. Default is `results.csv`.
 
-`-d DST_TYPS` - A comma-separated list of destination types to use as data to generate party analysis plots. Choose from `fqdn`, `org`, and `sld`.
+`-d DST_TYPS` - A comma-separated list of destination types to use as data to generate plots. Choose from `fqdn`, `org`, and `sld`.
 
-`-p PLT_TYPS` - A comma-separated list of plot types to use as the visual format to generate party analysis plots. Choose from `BarHPlot` and `PiePlot`.
+`-p PLT_TYPS` - A comma-separated list of plot types to use as the visual format to generate plots. Choose from `BarHPlot` and `PiePlot`.
 
 `-l` - Generate plots using `DST_TYPS` and `PLT_TYPS` linearly instead of in a 2D-array-like style.
 
