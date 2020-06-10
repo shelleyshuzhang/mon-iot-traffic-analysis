@@ -1,8 +1,10 @@
 # Getting Started
 
-This document provides a step-by-step starting guide to performing destination and encryption analysis with the code in this repository. A part of this software relies on the destination analysis section of the code accompanying the paper "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). That code (which will be refered to as the "IMC'19 code") can be found here: https://github.com/dng24/intl-iot. **In-depth information about this software can be found in the [README](README.md).
+This document provides a step-by-step starting guide to performing destination and encryption analysis with the code in this repository. A part of this software relies on the destination analysis section of the code accompanying the paper "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). That code (which will be referred to as the "IMC'19 code") can be found here: https://github.com/dng24/intl-iot. **In-depth information about this software can be found in the [README](README.md).
 
 ## Setup
+
+Setup involves setting up the destination analysis part of the IMC'19 code.
 
 1) Read [System Setup](https://github.com/dng24/intl-iot/blob/master/Getting_Started.md#system-setup) section in the Getting Started document of the IMC'19 code.
 
@@ -10,9 +12,16 @@ This document provides a step-by-step starting guide to performing destination a
 
 3) Follow the instructions in the [Destination Analysis Setup](https://github.com/dng24/intl-iot/blob/master/Getting_Started.md#setup) section of the Getting Started document of the IMC'19 code.
 
-4) Clone this Git Repository: `git clone https://github.com/shelleyshuzhang/neu_mon-iot-_network_traffic_analysis.git`
+4) Install the following dependencies:
 
-5) Go to the `src` directory: `cd neu_mon-iot-_network_traffic_analysis/src/`
+```
+pip install adblockparser
+apt install whois
+```
+
+5) Clone this Git Repository: `git clone https://github.com/shelleyshuzhang/neu_mon-iot-_network_traffic_analysis.git`
+
+6) Go to the `src` directory: `cd neu_mon-iot-_network_traffic_analysis/src/`
 
 At this point, the software has been setup for use.
 
@@ -44,9 +53,9 @@ Plots can also be produced using the `-d` and `-p` options. These options are co
 
 Currently, input into the `-d` option can be either `fqdn` (fully-qualified domain name), `org` (organization), or `sld` (second-level domain). The input into the `-p` option can either be `BarHPlot` (horizontal bar plot) or `PiePlot` (pie plot).
 
-Exmaple 3: `python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -s ../../intl-iot/ -d org,sld -p BarHPlot,PiePlot`
+Example 3: `python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -s ../../intl-iot/ -d org,sld -p BarHPlot,PiePlot`
 
-- Output: An output CSV named `results.csv` is produced in the current directory (`src/`). The graphs produced are located in directories in the following heirarchy: `plots/<analysis_type>/<plot_type>/<dst_type>/<plot_name>.png`. Four graphs are produced:
+- Output: An output CSV named `results.csv` is produced in the current directory (`src/`). The graphs produced are located in directories in the following hierarchy: `plots/<analysis_type>/<plot_type>/<dst_type>/<plot_name>.png`. Four graphs are produced:
   - a horizontal bar plot using organization information
   - a horizontal bar plot using second-level domain information
   - a pie plot using organization information
