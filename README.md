@@ -6,14 +6,10 @@ This script performs network analysis to classify traffic as either first, suppo
 
 This script uses Python 3.
 
-The following dependencies need to be installed:
-
-```
-pip install adblockparser
-apt install whois
-```
+To setup this software, follow the directions in the [Setup](Getting_Started.md#setup) section of the Getting Started document.
 
 ## Usage
+
 Usage: `python3 main.py -i PCAP_DIR -m MAC_ADDR {-s IMC_DIR | -v IN_CSV} [OPTION]...`
 
 Example: `python3 main.py -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -s ../intl-iot/ -c amazon -d org,sld -p PiePlot -n 4`
