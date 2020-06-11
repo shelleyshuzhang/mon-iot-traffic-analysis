@@ -103,6 +103,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             general_party_info['0'].add(h)
 
     index = 0
+    host_org = {}
     for host in host_list:
         party = identify_party(host=host, party_info=general_party_info)
         if party != "no party":
@@ -126,7 +127,11 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         elif new_party != 'Local' and new_party != 'Physical':
             # get organization using who is and save host/org to dict
             try:
-                org = get_org_using_who_is_server(host)
+                if host in host_org: # use organization in dict if host exists in the dict
+                    org = host_org[host]
+                else:
+                    org = get_org_using_who_is_server(host)
+                    host_org[host] = org
             except subprocess.CalledProcessError:
                 org = ""
 
@@ -160,7 +165,6 @@ def get_org_using_who_is_server(host):
         if s.startswith("Registrant Organization: "):
             org = s[25:]
             break
-
     return org
 
 
