@@ -5,6 +5,7 @@ import re
 import adblockparser
 from subprocess import check_output
 import subprocess
+import os
 
 options = ('device', 'ip', 'host', 'host_full', 'traffic_snd',
            'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
@@ -16,7 +17,7 @@ party_dict = {"-2": "Physical", "-1": "Local",
               "2": "Third party", "2.5": "Advertisers",
               "3": "Analytics"}
 company_name_dict = {"google": "Google LLC", "amazon": "Amazon.com Inc."}
-
+FNULL = open(os.devnull, "w")
 
 # find all the third parties in the list of pcap
 # files and write them to a txt file
@@ -157,7 +158,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
 # get the org of a host/IP by using who is
 # server to get its SLD
 def get_org_using_who_is_server(host):
-    who_is_answer = check_output(['whois', host])
+    who_is_answer = check_output(['whois', host], stderr=FNULL)
     ls: str = who_is_answer.decode("utf-8")
     ls: list = ls.splitlines()
     org = ""
