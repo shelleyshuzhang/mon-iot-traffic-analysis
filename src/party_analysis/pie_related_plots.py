@@ -1,3 +1,5 @@
+import copy
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 import numpy as np
@@ -7,7 +9,8 @@ import gc
 
 
 def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):
-    plt.figure(figsize=(20, 14))
+    plt.figure(figsize=(12, 9))
+    plt.rcParams['font.size'] = 12
     palette = plt.get_cmap('Set1')
     labels = []
     values = []
@@ -39,21 +42,22 @@ def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):
 def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot: list,
                      name_dict, third_party_color: list, host_name_too_long, fig_dpi,
                      empty_parties, patch_dict):
+    party_hosts_traffic = copy.deepcopy(party_hosts_traffic)
     if empty_parties[0]:
-        plt.rcParams['font.size'] = 18
-        current = plt.figure(figsize=(20, 14))
+        plt.rcParams['font.size'] = 12
+        current = plt.figure(figsize=(18, 12))
         sub1 = current.add_subplot(1, 2, 1)
         sub3 = current.add_subplot(1, 2, 2)
         sub2 = None
     elif empty_parties[1]:
-        plt.rcParams['font.size'] = 18
-        current = plt.figure(figsize=(20, 14))
+        plt.rcParams['font.size'] = 12
+        current = plt.figure(figsize=(18, 12))
         sub1 = current.add_subplot(1, 2, 1)
         sub2 = current.add_subplot(1, 2, 2)
         sub3 = None
     else:
-        plt.rcParams['font.size'] = 18
-        current = plt.figure(figsize=(36, 16))
+        plt.rcParams['font.size'] = 12
+        current = plt.figure(figsize=(20, 10))
         sub1 = current.add_subplot(1, 3, 2)
         sub3 = current.add_subplot(1, 3, 3)
         sub2 = current.add_subplot(1, 3, 1)
@@ -102,9 +106,9 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, por_cent)]
     # move the position of pie plot labels
     sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(0.5, 0.0))
-    sub1.set_title(title, x=0.5, y=1.15)
+    sub1.set_title(title, x=0.5, y=1.1)
 
-    if sub3 is not None and sub3 is not None:
+    if sub2 is not None and sub3 is not None:
         plot_bar_attached(sub1=sub1,
                           sub2=sub3,
                           third_party_color=third_party_color[1],
@@ -130,7 +134,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                           values=values,
                           legend_pos=(0.95, 1.),
                           patch_dict=patch_dict)
-    else:
+    elif sub2 is not None:
         plot_bar_attached(sub1=sub1,
                           sub2=sub2,
                           third_party_color=third_party_color[0],
@@ -152,25 +156,30 @@ def plot_bar_attached(sub1, sub2, third_party_color,
     # bar for second party
     x_pos = 0
     bottom = 0
-    values_sub1 = []
+    values_sub1: dict = {}
     width = 0.2
     colors_sub = []
     sub_palette = plt.get_cmap(third_party_color)
 
-    sub_index = 30
     this_party = patch_dict[party_bar_plot]
     all_hosts: dict = party_hosts_traffic[this_party]
+
+    if all_hosts.__len__() >= 20:
+        sub_index = 40
+    else:
+        sub_index = 60
+
     df = pd.DataFrame.from_dict(all_hosts, orient='index')
     df = df.sort_values(by=0, ascending=False)
     all_hosts = df.to_dict()[0]
 
     try:
         for sub_name in all_hosts:
-            values_sub1.append(float(all_hosts[sub_name])
-                               / float(values[int(party_bar_plot)]))
+            values_sub1[sub_name] = (float(all_hosts[sub_name])
+                                     / float(values[int(party_bar_plot)]))
             colors_sub.append(sub_index)
             if all_hosts.__len__() > 10:
-                sub_index += 12
+                sub_index += 10
             else:
                 sub_index += 15
     except ZeroDivisionError:
@@ -178,8 +187,9 @@ def plot_bar_attached(sub1, sub2, third_party_color,
     color_index = 0
     sub2_por_cent = []
     too_many_percent = values_sub1.__len__() > 15
-    for v in values_sub1:
-        height = v * 0.1
+    for v_name in values_sub1:
+        v = values_sub1[v_name]
+        height = v
         sub2.bar(x_pos, height, width, bottom=bottom,
                  color=sub_palette(colors_sub[color_index]))
         y_pos = bottom + sub2.patches[color_index].get_height() / 2
@@ -189,7 +199,7 @@ def plot_bar_attached(sub1, sub2, third_party_color,
         if (too_many_percent and v > 0.015) or (not too_many_percent and v > 0.01):
             sub2.text(x_pos, y_pos,
                       # "%g%%" % (round(sub2.patches[color_index].get_height(), 4) * 100),
-                      vis.network_traffic_units(v),
+                      vis.network_traffic_units(all_hosts[v_name]),
                       ha='center')
 
         sub2_por_cent.append(round(sub2.patches[color_index].get_height(), 4) * 100)

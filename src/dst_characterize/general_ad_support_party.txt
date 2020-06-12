@@ -20,13 +20,10 @@ creativecdn.com
 bing.com
 truste.com
 appnexusgslb.net
-ak-is2.net
 altitude-arena.com
 geodns.me
 trustarc.com
 cdn77.org
-gsh.io
-mdhv.io
 incapdns.net
 ntp.org
 1e100.net
@@ -35,7 +32,7 @@ ibm.com
 adobe.com
 kamatera.com
 vmware.com
-rackspace
+rackspace.com
 redhat.com
 salesforce.com
 oracle.com
@@ -102,7 +99,6 @@ eyereturn.com
 ipredictive.com
 vdopia.com
 wpengine.com
-qbk1.com
 clrstm.com
 linksynergy.com
 netmng.com
@@ -111,7 +107,6 @@ adnxs.com
 adition.com
 openx.net
 springserve.com
-gst.
 adhaven.com
 gwallet.com
 colossusssp.com
@@ -132,7 +127,7 @@ semasio.net
 sitescout.com
 videohub.tv
 lijit.com
-erne.co
+erne.com
 thebrighttag.com
 dmxleo.com
 bidr.io
@@ -151,7 +146,6 @@ casalemedia.com
 adsnative.com
 fbcdn.net
 spotxchange.com
-lkqd.net
 tubemogul.com
 dyntrk.com
 acuityplatform.com

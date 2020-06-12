@@ -134,6 +134,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             # if it is amazon or google
             if company in org and company in company_name_dict:
                 result['organization'][index] = company_name_dict[company]
+                result['party'][index] = 'First party'
             # if the org is empty, use the sld
             elif org == "" or org == " " \
                     or org == "n/a" or org == "website" \

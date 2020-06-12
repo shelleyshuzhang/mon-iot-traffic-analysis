@@ -50,7 +50,7 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
 
     fig_dir = vsp.check_dir_exist(fig_dir, "encryption_analysis")
 
-    def make_pie_plot(dst_type_name, party_t_dict, fig_dpi, pie_fig_dir):
+    def make_pie_plot(dst_type_name, party_t_dict, pie_fig_dpi, pie_fig_dir):
         pie_fig_dir = vsp.check_dir_exist(pie_fig_dir, "pie")
         pie_fig_dir = vsp.check_dir_exist(pie_fig_dir, dst_type_name)
         dst_type_name = dst_type_name.upper()
@@ -72,9 +72,9 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
                                                     protocol_color_dict["-1"]],
                                  host_name_too_long=protocol_name_too_long,
                                  empty_parties=[non_data1, non_data2],
-                                 fig_dpi=fig_dpi, patch_dict=patch_dict)
+                                 fig_dpi=pie_fig_dpi, patch_dict=patch_dict)
 
-    def make_bar_h_plot(party_t_dict, dst_type_name, fig_dpi, barh_fig_dir):
+    def make_bar_h_plot(party_t_dict, dst_type_name, barh_fig_dpi, barh_fig_dir):
         barh_fig_dir = vsp.check_dir_exist(barh_fig_dir, "barH")
         barh_fig_dir = vsp.check_dir_exist(barh_fig_dir, dst_type_name)
         dst_type_name = dst_type_name.upper()
@@ -97,7 +97,7 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
                            title="The percentage of unencrypted traffic sent "
                                  "to each destination " + dst_type_name
                                  + " and protocol&port and party (" + company + "/Bytes)",
-                           color_p=party_color_dict[party_bar_dict["0"]], fig_dpi=fig_dpi,
+                           color_p=party_color_dict[party_bar_dict["0"]], fig_dpi=barh_fig_dpi,
                            num_name="Amount of traffic shown using log scale (Bytes)",
                            save_name=barh_fig_dir + "/" + company + "_bar_" + dst_type_name
                                      + "_unencrypted_traffic.png")
@@ -107,33 +107,33 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
             if input_dst_type == "sld":
                 make_pie_plot(dst_type_name=input_dst_type,
                               party_t_dict=traffic_encryption_dst,
-                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
+                              pie_fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
                 make_pie_plot(dst_type_name=input_dst_type,
                               party_t_dict=traffic_encryption_fqdn,
-                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
+                              pie_fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
                 make_pie_plot(dst_type_name=input_dst_type,
                               party_t_dict=traffic_encryption_org,
-                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
+                              pie_fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
         elif input_plot_type == "barhplot":
             if input_dst_type == "sld":
                 make_bar_h_plot(party_t_dict=party_dict_unencrypted_sld,
                                 dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
+                                barh_fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
                 make_bar_h_plot(party_t_dict=party_dict_unencrypted_fqdn,
                                 dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
+                                barh_fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
                 make_bar_h_plot(party_t_dict=party_dict_unencrypted_org,
                                 dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
+                                barh_fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 
     if linear:
         for plot_type, dst_type in zip(plot_types, dst_types):
@@ -163,6 +163,9 @@ def group_traffic(dst_pros: list):
         encrypt = dst_pro.protocol_port.encrypted
 
         if dst_pro.protocol_port.imp == "1":
+            if protocol_port in protocol_details:
+                protocol_port = protocol_details[protocol_port]
+
             h_p = host + "(" + protocol_port + ")"
             if h_p in traffic_encryption_dst[encrypt]:
                 traffic_encryption_dst[encrypt][h_p] += traffic

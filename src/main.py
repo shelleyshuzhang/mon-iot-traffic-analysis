@@ -8,6 +8,8 @@ from dst_characterize import identify_party as idtpt
 from party_analysis import visualization_parties as vis
 from protocol_analysis import protocol_analysis as ptals
 from protocol_analysis import visualization_protocols as vis_pro
+from abroad_traffic_analysis import identify_abroad_adr as dtf_ab_adr
+from abroad_traffic_analysis import visualization_abroad as vis_abr
 import Constants as c
 
 software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
@@ -176,6 +178,12 @@ if __name__ == "__main__":
                        previous_info=result,
                        num_proc=int(args.num_proc))
 
+    # check if the traffic is sent abroad
+    print("Analyzing abroad traffic...")
+    result = dtf_ab_adr.read_dst_csv_after_ping(result=result,
+                                                dir_path=args.fig_dir,
+                                                company=company)
+
     out_csv = args.out_csv
     # write the result to a csv file
     out_csv_dir = os.path.dirname(out_csv)
@@ -230,5 +238,12 @@ if __name__ == "__main__":
                                        dst_types=dst_types, plot_types=plot_types,
                                        linear=args.linear)
 
-    print("Analysis finished.")
+        # analyze the country each destination is located in; calculate the amount of traffic
+        # sent and visualize the results as plots
+        print("Calculating country percentages for abroad analysis and generating plots...")
+        vis_abr.run(previous_data=result, company=company,
+                    fig_dir=args.fig_dir, fig_dpi=int(args.dpi),
+                    dst_types=dst_types, plot_types=plot_types,
+                    linear=args.linear)
 
+    print("Analysis finished.")
