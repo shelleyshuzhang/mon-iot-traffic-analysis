@@ -3,6 +3,7 @@ import os
 import sys
 import re
 import argparse
+import time
 
 from dst_characterize import identify_party as idtpt
 from party_analysis import visualization_parties as vis
@@ -56,6 +57,8 @@ def is_pos(num, num_desc):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     # Options
     parser = argparse.ArgumentParser(usage=c.USAGE_STM, add_help=False)
     parser.add_argument("-i", dest="dir_name", default="")
@@ -77,6 +80,8 @@ if __name__ == "__main__":
         print_usage(0)
 
     print("Running %s..." % c.PATH)
+    print("Start time: %s\n" % time.strftime("%A %d %B %Y %H:%M:%S %Z", time.localtime(start_time)))
+    #Thursday 11 June 2020 11:37:02 EDT
 
     dir_name = args.dir_name
     mac = args.mac
@@ -168,8 +173,7 @@ if __name__ == "__main__":
     # check if the traffic is encrypted
     print("Analyzing traffic encryption...")
 
-    # result is a list of DestinationPro that
-    # contains all the info
+    # result is a list of DestinationPro that contains all the info
     result = ptals.run(dir_name=dir_name,
                        device_mac=mac,
                        script_dir=c.SCRIPT_DIR,
@@ -230,5 +234,20 @@ if __name__ == "__main__":
                                        dst_types=dst_types, plot_types=plot_types,
                                        linear=args.linear)
 
-    print("Analysis finished.")
+    end_time = time.time()
+    print("\nEnd time: %s" % time.strftime("%A %d %B %Y %H:%M:%S %Z", time.localtime(end_time)))
+
+    #Calculate elapsed time
+    sec = round(end_time - start_time)
+    hrs = sec // 3600
+    if hrs != 0:
+        sec = sec - hrs * 3600
+
+    minute = sec // 60
+    if minute != 0:
+        sec = sec - minute * 60
+
+    print("Elapsed time: %s hours %s minutes %s seconds" % (hrs, minute, sec))
+
+    print("\nAnalysis finished.")
 

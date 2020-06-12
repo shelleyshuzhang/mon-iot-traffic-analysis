@@ -5,6 +5,7 @@ import re
 import adblockparser
 from subprocess import check_output
 import subprocess
+import os
 
 options = ('device', 'ip', 'host', 'host_full', 'traffic_snd',
            'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
@@ -16,7 +17,7 @@ party_dict = {"-2": "Physical", "-1": "Local",
               "2": "Third party", "2.5": "Advertisers",
               "3": "Analytics"}
 company_name_dict = {"google": "Google LLC", "amazon": "Amazon.com Inc."}
-
+FNULL = open(os.devnull, "w")
 
 # find all the third parties in the list of pcap
 # files and write them to a txt file
@@ -103,6 +104,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
             general_party_info['0'].add(h)
 
     index = 0
+    host_org = {}
     for host in host_list:
         party = identify_party(host=host, party_info=general_party_info)
         if party != "no party":
@@ -126,7 +128,11 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
         elif new_party != 'Local' and new_party != 'Physical':
             # get organization using who is and save host/org to dict
             try:
-                org = get_org_using_who_is_server(host)
+                if host in host_org: # use organization in dict if host exists in the dict
+                    org = host_org[host]
+                else:
+                    org = get_org_using_who_is_server(host)
+                    host_org[host] = org
             except subprocess.CalledProcessError:
                 org = ""
 
@@ -152,7 +158,7 @@ def run_extract_third_parties(input_csv_file, script_dir, company="unknown"):
 # get the org of a host/IP by using who is
 # server to get its SLD
 def get_org_using_who_is_server(host):
-    who_is_answer = check_output(['whois', host])
+    who_is_answer = check_output(['whois', host], stderr=FNULL)
     ls: str = who_is_answer.decode("utf-8")
     ls: list = ls.splitlines()
     org = ""
@@ -160,7 +166,6 @@ def get_org_using_who_is_server(host):
         if s.startswith("Registrant Organization: "):
             org = s[25:]
             break
-
     return org
 
 
