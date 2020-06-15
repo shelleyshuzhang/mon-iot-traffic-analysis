@@ -223,5 +223,5 @@ def write_hosts_by_party(party_dict, fname):
 def check_dir_exist(ori_path, new_dir):
     new_path = os.path.join(ori_path, new_dir)
     if not os.path.exists(new_path):
-        os.mkdir(new_path)
+        os.system("mkdir -pv %s" % new_path)
     return new_path

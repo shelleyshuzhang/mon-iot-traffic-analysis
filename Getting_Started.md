@@ -1,6 +1,6 @@
 # Getting Started
 
-This document provides a step-by-step starting guide to performing destination and encryption analysis with the code in this repository. A part of this software relies on the destination analysis section of the code accompanying the paper "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). That code (which will be referred to as the "IMC'19 code") can be found here: https://github.com/dng24/intl-iot. **In-depth information about this software can be found in the [README](README.md).**
+This document provides a step-by-step starting guide to performing destination and encryption analysis with the code in this repository. A part of this software relies on the destination analysis section of the code accompanying the paper "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC'19). That code (which will be referred to as the "IMC'19 code") can be found here: https://github.com/dng24/intl-iot. **In-depth information about this software can be found in the [README](README.md).**
 
 ## Setup
 
@@ -16,6 +16,7 @@ Setup involves setting up the destination analysis part of the IMC'19 code.
 
 ```
 pip install adblockparser
+pip install pythonping
 apt-get install whois
 ```
 
@@ -35,17 +36,19 @@ For input, very basic usage requires a directory containing the pcap files for a
 
 For output, a CSV file containing the destination and encryption analyses is generated. For in depth information about the contents of the CSV file, see the [Main CSV Output](README.md#main-csv-output) section of the README.
 
-Example 1: `python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -s ../../intl-iot/ -c amazon`
+Example 1: `sudo python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -s ../../intl-iot/ -c amazon`
 
-- Output: A CSV file named `results.csv` is produced in the current directory (`src/`). Another CSV file named `amazon_tmp.csv` is also produced in a newly created directory named `plots/`. This CSV file is the output of running the IMC'19 destination analysis with the following command: `python3 analyze.py -i ../../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -o plots/amazon_tmp.csv`.
+**Note: `sudo` is needed to ping IP addresses to perform abroad analysis.**
+
+- Output: A CSV file named `results.csv` is produced in the current directory (`src/`). Another CSV file named `amazon_tmp.csv` is also produced in a newly created directory named `plots/`. This CSV file is the output of running the IMC'19 destination analysis with the following command: `python3 analyze.py -i ../../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -o plots/amazon_tmp.csv`. A third file named `results_destinations.pkl` is produced. This file contains the analysis data. If the Example 1 command is run again, the analysis will be skipped, and any plots specified (see Example 3) will be generated from the file's data.
 
 ### Passing in an Existing IMC'19 Destination Analysis CSV File
 
 If you already have the output CSV for a dataset from the IMC'19 destination pipeline, you can pass it into this software using the (`-v`) option instead of providing the (`-s`) option. Providing the `-v` option skips the IMC'19 destination analysis step, which can save a lot of time.
 
-Example 2: `python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -v plots/amazon_tmp.csv`
+Example 2: `sudo python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -v plots/amazon_tmp.csv`
 
-- Output: An output CSV named `results.csv` is produced in the current directory (`src/`).
+- Output: An output CSV named `results.csv` and a data file named `results_destinations.pkl` are produced in the current directory (`src/`).
  
 ### Producing Plots
 
@@ -53,13 +56,13 @@ Plots can also be produced using the `-d` and `-p` options. These options are co
 
 Currently, input into the `-d` option can be either `fqdn` (fully-qualified domain name), `org` (organization), or `sld` (second-level domain). The input into the `-p` option can either be `BarHPlot` (horizontal bar plot) or `PiePlot` (pie plot).
 
-Example 3: `python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -s ../../intl-iot/ -d org,sld -p BarHPlot,PiePlot`
+Example 3: `sudo python3 main.py -i ../../amazon-experiment-raw-traffic/8:a6:bc:7f:a0:41/ -m 08:a6:bc:7f:a0:41 -s ../../intl-iot/ -d org,sld -p BarHPlot,PiePlot`
 
-- Output: An output CSV named `results.csv` is produced in the current directory (`src/`). The graphs produced are located in directories in the following hierarchy: `plots/<analysis_type>/<plot_type>/<dst_type>/<plot_name>.png`. In this case, four graphs are produced:
-  - a horizontal bar plot using organization information
-  - a horizontal bar plot using second-level domain information
-  - a pie plot using organization information
-  - a pie plot using second-level domain information
+- Output: An output CSV named `results.csv` and a data file named `results_destinations.pkl` are produced in the current directory (`src/`). The graphs produced are located in directories in the following hierarchy: `plots/<analysis_type>/<plot_type>/<dst_type>/<plot_name>.png`. In this case, four sets of graphs are produced:
+  - a set of horizontal bar plots using organization information
+  - a set of horizontal bar plots using second-level domain information
+  - a set of pie plots using organization information
+  - a set of pie plots using second-level domain information
 
 For more information and advanced options, see the [README](README.md).
 

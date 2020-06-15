@@ -1,6 +1,6 @@
 # Network Traffic Analysis
 
-This script performs network analysis to classify traffic as either first, support, third, local, advertiser, or analytic party traffic. The script also determines the amount of unencrypted traffic and the destinations that this unencrypted traffic is being received from and sent to.
+This script performs network analysis to classify network traffic of Internet of Things (IoT) devices as either first, support, third, local, advertiser, or analytic party traffic. The script also determines the amount of unencrypted traffic and the destinations that this unencrypted traffic is being received from and sent to. Abroad analysis, which checks whether traffic is coming from abroad (this software assumes the user is based in the United States).
 
 For step-by-step instructions on getting started, see the [Getting Started](Getting_Started.md) document.
 
@@ -12,9 +12,13 @@ To setup this software, follow the directions in the [Setup](Getting_Started.md#
 
 ## Usage
 
-Usage: `python3 main.py -i PCAP_DIR -m MAC_ADDR {-s IMC_DIR | -v IN_CSV} [OPTION]...`
+Usage: `sudo python3 main.py -i PCAP_DIR -m MAC_ADDR {-s IMC_DIR | -v IN_CSV} [OPTION]...`
 
-Example: `python3 main.py -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -s ../intl-iot/ -c amazon -d org,sld -p PiePlot -n 4`
+Example: `sudo python3 main.py -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -s ../intl-iot/ -c amazon -d org,sld -p PiePlot -n 4`
+
+Example: `sudo python3 main.py -i echodot_pcaps/ -m 18:74:2e:41:4d:35 -v echodot_tmp.csv -c amazon -n 4 -o echodot_results.csv`
+
+**Note: `sudo` is needed to ping IP addresses for abroad analysis.**
 
 ## Input
 
@@ -26,9 +30,9 @@ There are several options to choose from, which are summarized below:
 
 `-m MAC_ADDR` - The MAC address of the device that generated the data in `PCAP_DIR`.
 
-`-v IN_CSV` - The path to the output CSV filename of running destination analysis of the IMC'19 code on the pcap files in `PCAP_DIR`. **Either this option or the `-s` option is required.** If the CSV exists, it is recommended that this option be used instead of the `-s` option. If the CSV does not exist, use the `-s` option to generate the CSV.
+`-s IMC_DIR` - The path to the main directory (`intl-iot/`) containing the code accompanying the paper titled "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC'19). The code can be found here: https://github.com/dng24/intl-iot/. Destination analysis is performed using this code. **Either this option or the `-v` option is required.**
 
-`-s IMC_DIR` - The path to the main directory (`intl-iot/`) containing the code accompanying the paper titled "Information Exposure From Consumer IoT Devices: A Multidimensional, Network-Informed Measurement Approach" in proceedings of the ACM Internet Measurement Conference 2019 (IMC 2019). The code can be found here: https://github.com/dng24/intl-iot. Destination analysis is performed using this code. **Either this option or the `-v` option is required.**
+`-v IN_CSV` - The path to the output CSV filename of running destination analysis of the IMC'19 code on the pcap files in `PCAP_DIR`. **Either this option or the `-s` option is required.** If the CSV exists, it is recommended that this option be used instead of the `-s` option. If the CSV does not exist, use the `-s` option to generate the CSV.
 
 #### Optional Arguments
 
@@ -109,19 +113,27 @@ Several plots can be produced for visualization. Plots are generated based on th
 
 #### Party Analysis
 
-- One graph, named `<DEV_MFR>_device_parties_<plot_type>_<dst_type>.png`, shows the percentage of first, support, third, local, advertiser, and analytic party traffic from the input pcap files. The graph also shows the number of bytes of traffic from each party.
+- One set of plots, with the format `<DEV_MFR>_device_parties_<plot_type>_<dst_type>.png`, shows the percentage of first, support, third, local, advertiser, and analytic party traffic from the input pcap files. These plots also shows the number of bytes of traffic from each party.
 
-- For each party, a graph named `<DEV_MFR>_<plot_type>_<dst_type>_<party>_party_traffic.png` is produced. It shows the domain names and the percentage of traffic from that domain. If a party does not have traffic, no graph is produced for that party.
+- For each party, plots in the format `<DEV_MFR>_<plot_type>_<dst_type>_<party>_party_traffic.png` are produced. They show the domain names and the percentage of traffic from each domain. If a party does not have traffic, no graphs are produced for that party.
 
 #### Encryption Analysis
 
-- For pie plots, a graph named `<DEV_MFR>_pie_<dst_type>_encryption_traffic.png` is produced. It shows the percentage of traffic that is encrypted and the percentage of traffic that is unencrypted.
+- For pie plots, a set of plots in the format `<DEV_MFR>_pie_<dst_type>_encryption_traffic.png` are produced. They show the percentage of traffic that is encrypted and the percentage of traffic that is unencrypted.
 
-- For horizontal bar plots, a graph named `<DEV_MFR>_bar_<dst_type>_unencrypted_traffic.png` is produced. It shows the destinations of the unencrypted traffic and the amount of traffic being sent to and received from each destination.
+- For horizontal bar plots, plots in the format `<DEV_MFR>_bar_<dst_type>_unencrypted_traffic.png` are produced. They show the destinations of the unencrypted traffic and the amount of traffic being sent to and received from each destination.
+
+#### Abroad Analysis
+
+- A set of plots named `<DEV_MFR>_<plot_type>_<dst_type>_abroad_traffic.png` are produced. They show the percentage of traffic that sent traffic abroad and the domain names of the abroad traffic.
 
 ### Other Files Generated
 
+- A file, named `<OUT_CSV>_destinations.pkl` is generated. It contains the data of all three analyses. If a command is run again, the three analyses are skipped, as the results are contained in this file, and the plots are produced right away. To rerun the analysis, delete this file.
+
 - A text file, named `<DEV_MFR>_all_<dst_type>.txt`, which lists the specified data by party is produced. This file can be found in the plot directory structure.
+
+- A text file, named `<DEV_MFR>_ping_result.txt` can be found in the directory named `<FIG_DIR>_country_analysis/`. This text file lists each destination pinged along with the time relative to the based time (a ping to harvard.edu). If the ping to harvard.edu fails, the base time is 15 ms. A positive time means the ping is that many milliseconds slower than the base ping, while a negative time means the ping is that many milliseconds faster.
 
 - If the `-s` option is used, a CSV file, named `<DEV_MFR>_tmp.csv`, which is a temporary file containing the output of running the destination analysis from the IMC'19 software is also generated. This file can be found in `FIG_DIR`.
 

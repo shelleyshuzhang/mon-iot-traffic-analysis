@@ -149,3 +149,4 @@ def read_json_ct(file_path):
         ct_dict = json.load(f)
         f.close()
         return ct_dict
+
