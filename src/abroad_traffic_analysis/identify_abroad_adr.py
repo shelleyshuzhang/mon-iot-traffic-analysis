@@ -75,17 +75,25 @@ def read_dst_csv_after_ping(pre_results, dir_path, company, script_path):
         all_dp.to_csv(pre_results, index=False)
         return results
     elif isinstance(pre_results, list):
+        previous_ips = {}
         for dp in pre_results:
             dst = dp.host
             ip = dst.ip
-            country = dst.country
-            confirmed_ct = confirm_country(ip=ip,
-                                           country=country,
-                                           get_region=get_region,
-                                           base_time=base_time,
-                                           ping_result_file=ping_result_file)
-            if confirmed_ct != "n/a":
-                dp.country = confirmed_ct
+            if ip not in previous_ips.keys():
+                country = dst.country
+                confirmed_ct = confirm_country(ip=ip,
+                                               country=country,
+                                               get_region=get_region,
+                                               base_time=base_time,
+                                               ping_result_file=ping_result_file)
+                previous_ips[ip] = confirmed_ct
+                print(ip, confirmed_ct)
+            else:
+                print(ip, previous_ips[ip], "prev")
+
+            if previous_ips[ip] != "n/a":
+                dp.country = previous_ips[ip]
+
         return pre_results
 
 
@@ -149,3 +157,4 @@ def read_json_ct(file_path):
         ct_dict = json.load(f)
         f.close()
         return ct_dict
+
