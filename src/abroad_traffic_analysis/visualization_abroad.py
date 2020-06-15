@@ -2,6 +2,7 @@ import numpy as np
 from party_analysis import visualization_parties as vsp
 from party_analysis import pie_related_plots as prp
 from party_analysis import bar_related_plots as brp
+from dst_characterize import identify_party as dtf_pt
 
 country_name_dict = {"0": "US/Local", "1": "Abroad", "-1": "Unknown"}
 country_color_dict = {"0": 'Reds', "1": 'Blues', "-1": 'Greens'}
@@ -28,7 +29,7 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
     fig_dir = vsp.check_dir_exist(ori_path=fig_dir,
                                   new_dir="country_analysis")
 
-    def make_pie_plot(dst_type_name, party_t_dict, fig_dpi, pie_fig_dir):
+    def make_pie_plot(dst_type_name, party_t_dict, pie_plot_dpi, pie_fig_dir):
         pie_fig_dir = vsp.check_dir_exist(pie_fig_dir, "pie")
         pie_fig_dir = vsp.check_dir_exist(pie_fig_dir, dst_type_name)
         dst_type_name = dst_type_name.upper()
@@ -49,7 +50,7 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
                                                     country_color_dict["-1"]],
                                  host_name_too_long=country_name_too_long,
                                  empty_parties=[non_data1, non_data2],
-                                 fig_dpi=fig_dpi, patch_dict=patch_dict)
+                                 fig_dpi=pie_plot_dpi, patch_dict=patch_dict)
 
     def make_bar_h_plot(party_t_dict, dst_type_name, fig_dpi, barh_fig_dir):
         barh_fig_dir = vsp.check_dir_exist(barh_fig_dir, "barH")
@@ -79,38 +80,38 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
                            save_name=barh_fig_dir + "/" + company + "_bar_" + dst_type_name
                                      + "_abroad_traffic.png")
 
-    def make_plot(input_plot_type: str, input_dst_type: str, fig_dpi: int):
+    def make_plot(input_plot_type: str, input_dst_type: str, all_plot_dpi: int):
         if input_plot_type == "pieplot":
             if input_dst_type == "sld":
                 make_pie_plot(dst_type_name=input_dst_type,
                               party_t_dict=country_info_sld,
-                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
+                              pie_plot_dpi=all_plot_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
                 make_pie_plot(dst_type_name=input_dst_type,
                               party_t_dict=country_info_fqdn,
-                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
+                              pie_plot_dpi=all_plot_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
                 make_pie_plot(dst_type_name=input_dst_type,
                               party_t_dict=country_info_org,
-                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
+                              pie_plot_dpi=all_plot_dpi, pie_fig_dir=fig_dir)
 
         elif input_plot_type == "barhplot":
             if input_dst_type == "sld":
                 make_bar_h_plot(party_t_dict=abroad_all_info_sld,
                                 dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
+                                fig_dpi=all_plot_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
                 make_bar_h_plot(party_t_dict=abroad_all_info_fqdn,
                                 dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
+                                fig_dpi=all_plot_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
                 make_bar_h_plot(party_t_dict=abroad_all_info_org,
                                 dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
+                                fig_dpi=all_plot_dpi, barh_fig_dir=fig_dir)
 
     if linear:
         for plot_type, dst_type in zip(plot_types, dst_types):
@@ -125,12 +126,13 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
 def read_dst_countries(result):
     def add_to_pie_groups(group_dict, dst: str):
         c_name = country + '(' + dst + ')'
-        if country == "Local" or country == "US":
+        if dtf_pt.detect_local_host(host=country) or country == "US":
             if c_name in group_dict["0"]:
                 group_dict["0"][c_name] += traffic
             else:
                 group_dict["0"][c_name] = traffic
-        elif country.startswith("Unknown"):
+        elif country.startswith("Likely") \
+                or country == "Unknown":
             if c_name in group_dict["-1"]:
                 group_dict["-1"][c_name] += traffic
             else:

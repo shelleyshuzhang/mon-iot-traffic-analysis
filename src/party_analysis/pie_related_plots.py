@@ -44,25 +44,29 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                      empty_parties, patch_dict):
     party_hosts_traffic = copy.deepcopy(party_hosts_traffic)
     if empty_parties[0]:
-        plt.rcParams['font.size'] = 12
-        current = plt.figure(figsize=(18, 12))
+        plt.rcParams['font.size'] = 16
+        current = plt.figure(figsize=(16, 10))
         sub1 = current.add_subplot(1, 2, 1)
         sub3 = current.add_subplot(1, 2, 2)
         sub2 = None
+        # move the white spaces between the bar and pie plots
+        current.subplots_adjust(wspace=-0.3)
     elif empty_parties[1]:
-        plt.rcParams['font.size'] = 12
-        current = plt.figure(figsize=(18, 12))
+        plt.rcParams['font.size'] = 16
+        current = plt.figure(figsize=(16, 10))
         sub1 = current.add_subplot(1, 2, 1)
         sub2 = current.add_subplot(1, 2, 2)
         sub3 = None
+        # move the white spaces between the bar and pie plots
+        current.subplots_adjust(wspace=-0.3)
     else:
-        plt.rcParams['font.size'] = 12
+        plt.rcParams['font.size'] = 12.5
         current = plt.figure(figsize=(20, 10))
         sub1 = current.add_subplot(1, 3, 2)
         sub3 = current.add_subplot(1, 3, 3)
         sub2 = current.add_subplot(1, 3, 1)
-    # move the white spaces between the bar and pie plots
-    current.subplots_adjust(wspace=-0.3)
+        # move the white spaces between the bar and pie plots
+        current.subplots_adjust(wspace=-0.45)
 
     # pie chart textprops={'fontsize': 18}
     palette = plt.get_cmap('Set1')
@@ -84,7 +88,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
             total_traffic += current_t
             if all_hosts_len > 20 and \
                     ((party != "2.5" and current_t / all_t <= 0.002)
-                     or (party == "2.5" and current_t / all_t <= 0.008)):
+                     or (party == "2.5" and current_t / all_t <= 0.01)):
                 other_h_t += current_t
                 too_small_h.append(host)
         if other_h_t > 0:
@@ -101,21 +105,25 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     values = np.array(values)
     labels = np.char.array(labels)
     por_cent = 100. * values / values.sum()
-    patches, texts = sub1.pie(values, labels=num_labels, colors=colors,
-                              counterclock=False, shadow=True, radius=1)
+    patches, texts = sub1.pie(values, colors=colors, counterclock=False,
+                              shadow=True, radius=1)
     labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, por_cent)]
+    l_index = 0
+    while l_index < labels.__len__():
+        labels[l_index] += (" (" + num_labels[l_index] + ")")
+        l_index += 1
     # move the position of pie plot labels
-    sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(0.5, 0.0))
-    sub1.set_title(title, x=0.5, y=1.1)
+    sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(0.3, 0.0))
 
     if sub2 is not None and sub3 is not None:
+        sub1.set_title(title, x=0.5, y=1.05)
         plot_bar_attached(sub1=sub1,
                           sub2=sub3,
                           third_party_color=third_party_color[1],
                           party_bar_plot=party_bar_plot[1],
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
-                          legend_pos=(0.95, 1.),
+                          legend_pos=(0.9, 1.),
                           patch_dict=patch_dict)
         plot_bar_attached(sub1=sub1,
                           sub2=sub2,
@@ -123,25 +131,27 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                           party_bar_plot=party_bar_plot[0],
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
-                          legend_pos=(0.05, 1.),
+                          legend_pos=(0.04, 1.),
                           patch_dict=patch_dict)
     elif sub3 is not None:
+        sub1.set_title(title, x=0.8, y=1.1)
         plot_bar_attached(sub1=sub1,
                           sub2=sub3,
                           third_party_color=third_party_color[1],
                           party_bar_plot=party_bar_plot[1],
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
-                          legend_pos=(0.95, 1.),
+                          legend_pos=(0.92, 1.),
                           patch_dict=patch_dict)
     elif sub2 is not None:
+        sub1.set_title(title, x=0.8, y=1.1)
         plot_bar_attached(sub1=sub1,
                           sub2=sub2,
                           third_party_color=third_party_color[0],
                           party_bar_plot=party_bar_plot[0],
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
-                          legend_pos=(0.95, 1.),
+                          legend_pos=(0.92, 1.),
                           patch_dict=patch_dict)
 
     current.savefig(save_name, dpi=fig_dpi)

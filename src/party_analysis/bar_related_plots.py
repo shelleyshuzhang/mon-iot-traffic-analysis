@@ -26,8 +26,8 @@ def bar_h_plot(data: list, names: list, title, color_p,
 
     data_d = {num_name: pd.Series(data, index=names)}
 
-    fig = plt.figure(figsize=(18, 20))
-    plt.rcParams['font.size'] = 16
+    fig = plt.figure(figsize=(18, 16))
+    plt.rcParams['font.size'] = 12
     ax = fig.add_subplot(111)
     df = pd.DataFrame(data_d)
     df = df.sort_values(by=num_name)

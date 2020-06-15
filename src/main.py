@@ -1,8 +1,10 @@
 import csv
 import os
+import pickle
 import sys
 import re
 import argparse
+import time
 
 from dst_characterize import identify_party as idtpt
 from party_analysis import visualization_parties as vis
@@ -15,7 +17,8 @@ import Constants as c
 software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
 current_location = "/Users/zhangshu/PycharmProjects/neu_mon-iot-_network_traffic_analysis"
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
-protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port: 80": "Http"}
+protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http",
+                    "UDP port: 80": "Http", "UDP port: 443": "Https"}
 
 
 # isError is either 0 or 1
@@ -58,6 +61,8 @@ def is_pos(num, num_desc):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     # Options
     parser = argparse.ArgumentParser(usage=c.USAGE_STM, add_help=False)
     parser.add_argument("-i", dest="dir_name", default="")
@@ -79,6 +84,8 @@ if __name__ == "__main__":
         print_usage(0)
 
     print("Running %s..." % c.PATH)
+    print("Start time: %s\n" % time.strftime("%A %d %B %Y %H:%M:%S %Z", time.localtime(start_time)))
+    # Thursday 11 June 2020 11:37:02 EDT
 
     dir_name = args.dir_name
     mac = args.mac
@@ -154,73 +161,99 @@ if __name__ == "__main__":
         print_usage(1)
     # End error checking
 
-    # Run destination analysis if necessary
-    in_csv = args.in_csv
-    if in_csv == "":
-        in_csv = args.fig_dir + "/" + company + "_tmp.csv"
-        cmd = ("python3 %s -i %s -m %s -o %s -n %s"
-               % (software_location, dir_name, mac, in_csv, args.num_proc))
-        print("Running destination analysis...\n   " + cmd)
-        os.system(cmd + " > /dev/null")
-
-    # characterize the parties
-    print("Characterizing the parties...")
-    result = idtpt.run_extract_third_parties(in_csv, c.SCRIPT_DIR, company)
-
-    # check if the traffic is encrypted
-    print("Analyzing traffic encryption...")
-
-    # result is a list of DestinationPro that
-    # contains all the info
-    result = ptals.run(dir_name=dir_name,
-                       device_mac=mac,
-                       script_dir=c.SCRIPT_DIR,
-                       previous_info=result,
-                       num_proc=int(args.num_proc))
-
-    # check if the traffic is sent abroad
-    print("Analyzing abroad traffic...")
-    result = dtf_ab_adr.read_dst_csv_after_ping(result=result,
-                                                dir_path=args.fig_dir,
-                                                company=company)
-
     out_csv = args.out_csv
-    # write the result to a csv file
-    out_csv_dir = os.path.dirname(out_csv)
-    if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
-        os.system("mkdir -pv " + out_csv_dir)
+    pkl_name = out_csv.split(".")[0]
+    pkl_name += '_destinations.pkl'
 
-    with open(file=out_csv, mode='w') as result_csv_file:
-        fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
-                      'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
-                      'party', 'organization', 'protocol&port', 'encryption')
-        writer = csv.DictWriter(result_csv_file, fieldnames=fieldnames)
-        writer.writeheader()
-        for dp in result:
-            dst = dp.host
-            pro = dp.protocol_port
-            send = dp.snd
-            received = dp.rcv
-            p_snd = dp.p_snd
-            p_rcv = dp.p_rcv
-            encrypted = protocol_encrypted_dict[pro.encrypted]
-            protocol_p = pro.protocol_port
-            if protocol_p in protocol_details:
-                protocol_p = protocol_details[protocol_p]
-            writer.writerow({'ip': dst.ip,
-                             'host': dst.host,
-                             'host_full': dst.host_full,
-                             'traffic_snd': send,
-                             'traffic_rcv': received,
-                             'packet_snd': p_snd,
-                             'packet_rcv': p_rcv,
-                             'country': dst.country,
-                             'party': dst.party,
-                             'organization': dst.organization,
-                             'protocol&port': protocol_p,
-                             'encryption': encrypted})
 
-    print("Results written to \"" + out_csv + "\"")
+    def save_object(obj, filename):
+        with open(filename, 'wb') as output:
+            pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+
+    if os.path.isfile(pkl_name):
+        with open(pkl_name, 'rb') as input_pkl:
+            result = pickle.load(input_pkl)
+    else:
+        if not os.path.isfile(out_csv):
+            # Run destination analysis if necessary
+            in_csv = args.in_csv
+            if in_csv == "":
+                in_csv = args.fig_dir + "/" + company + "_tmp.csv"
+                cmd = ("python3 %s -i %s -m %s -o %s -n %s"
+                       % (software_location, dir_name, mac, in_csv, args.num_proc))
+                print("Running destination analysis...\n   " + cmd)
+                os.system(cmd + " > /dev/null")
+
+            # characterize the parties
+            print("Characterizing the parties...")
+            result = idtpt.run_extract_third_parties(in_csv, c.SCRIPT_DIR, company)
+
+            # check if the traffic is encrypted
+            print("Analyzing traffic encryption...")
+
+            # result is a list of DestinationPro that
+            # contains all the info
+            result = ptals.run(dir_name=dir_name,
+                               device_mac=mac,
+                               script_dir=c.SCRIPT_DIR,
+                               previous_info=result,
+                               num_proc=int(args.num_proc))
+
+            # check if the traffic is sent abroad
+            print("Analyzing abroad traffic...")
+            result = dtf_ab_adr.read_dst_csv_after_ping(pre_results=result,
+                                                        dir_path=args.fig_dir,
+                                                        company=company,
+                                                        script_path=c.SCRIPT_DIR)
+
+            save_object(result, pkl_name)
+
+            # write the result to a csv file
+            out_csv_dir = os.path.dirname(out_csv)
+            if out_csv_dir != "" and not os.path.isdir(out_csv_dir):
+                os.system("mkdir -pv " + out_csv_dir)
+
+            with open(file=out_csv, mode='w') as result_csv_file:
+                fieldnames = ('ip', 'host', 'host_full', 'traffic_snd',
+                              'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
+                              'party', 'organization', 'protocol&port', 'encryption')
+                writer = csv.DictWriter(result_csv_file, fieldnames=fieldnames)
+                writer.writeheader()
+                for dp in result:
+                    dst = dp.host
+                    pro = dp.protocol_port
+                    send = dp.snd
+                    received = dp.rcv
+                    p_snd = dp.p_snd
+                    p_rcv = dp.p_rcv
+                    encrypted = protocol_encrypted_dict[pro.encrypted]
+                    protocol_p = pro.protocol_port
+                    if protocol_p in protocol_details:
+                        protocol_p = protocol_details[protocol_p]
+                    writer.writerow({'ip': dst.ip,
+                                     'host': dst.host,
+                                     'host_full': dst.host_full,
+                                     'traffic_snd': send,
+                                     'traffic_rcv': received,
+                                     'packet_snd': p_snd,
+                                     'packet_rcv': p_rcv,
+                                     'country': dst.country,
+                                     'party': dst.party,
+                                     'organization': dst.organization,
+                                     'protocol&port': protocol_p,
+                                     'encryption': encrypted})
+
+            print("Results written to \"" + out_csv + "\"")
+
+        else:
+            # check if the traffic is sent abroad
+            print("Analyzing abroad traffic...")
+            result = dtf_ab_adr.read_dst_csv_after_ping(pre_results=out_csv,
+                                                        dir_path=args.fig_dir,
+                                                        company=company,
+                                                        script_path=c.SCRIPT_DIR)
+            save_object(result, pkl_name)
 
     # analyze the percentage of each party in all hosts and the amount of traffic
     # sent to each party, and generate the plots
@@ -246,4 +279,19 @@ if __name__ == "__main__":
                     dst_types=dst_types, plot_types=plot_types,
                     linear=args.linear)
 
-    print("Analysis finished.")
+    end_time = time.time()
+    print("\nEnd time: %s" % time.strftime("%A %d %B %Y %H:%M:%S %Z", time.localtime(end_time)))
+
+    # Calculate elapsed time
+    sec = round(end_time - start_time)
+    hrs = sec // 3600
+    if hrs != 0:
+        sec = sec - hrs * 3600
+
+    minute = sec // 60
+    if minute != 0:
+        sec = sec - minute * 60
+
+    print("Elapsed time: %s hours %s minutes %s seconds" % (hrs, minute, sec))
+
+    print("\nAnalysis finished.")

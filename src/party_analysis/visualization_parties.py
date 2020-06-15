@@ -143,9 +143,11 @@ def calc_party_pct(csv_filename: str, company: str, fig_dir: str, fig_dpi: int,
                     current_t = all_hosts[host]
                     all_hosts_len = all_hosts.__len__()
                     all_t = int(np.array(list(all_hosts.values())).sum())
-                    if all_hosts_len > 20 and \
-                            ((p != "Advertiser" and current_t / all_t <= 0.002)
-                             or (p == "Advertiser" and current_t / all_t <= 0.0001)):
+                    if all_hosts_len > 25 and \
+                            ((p != "Advertiser" and current_t / all_t <= 0.001)
+                             or (p == "Advertiser" and current_t / all_t <= 0.002)
+                             or (p == "Advertiser" and all_hosts_len >= 50 and current_t / all_t <= 0.01)
+                             or (p != "Advertiser" and all_hosts_len >= 50 and current_t / all_t <= 0.002)):
                         other_h_t += current_t
                         too_small_h.append(host)
                 if other_h_t > 0:
