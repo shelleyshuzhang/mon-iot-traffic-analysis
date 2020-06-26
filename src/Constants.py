@@ -42,6 +42,8 @@ Required arguments:
 Optional arguments:
   -c DEV_MFR  company that created the device that generated the data in PCAP_DIR;
                 used to identify first parties (Default = unknown)
+  -t TIME_RNG time range, in number of days, to split pcaps into for longitudinal
+                analysis; can be fractions of a day (Default = 1)
   -f FIG_DIR  path to a directory to place the generated plots; will be generated
                 if it does not currently exist (Default = plots/)
   -o OUT_CSV  path to the output CSV file; if it exists, results will be appended,
@@ -52,7 +54,7 @@ Optional arguments:
                 plots; choose from BarHPlot and PiePlot
   -l          generates plots using DST_TYPS and PLT_TYPS linearly instead of using
                 a 2D-array-like style (see below for more information)
-  -t DPI      dots per inch (DPI) of a plot (Default = 72)
+  -e DPI      dots per inch (DPI) of a plot (Default = 72)
   -n NUM_PROC number of CPU processes to use to run the destination analysis and
                 protocol analysis portions (Default = 1)
   -h          print this usage statement and exit
@@ -75,7 +77,7 @@ Notes:
 For more information, see the README.""".format(prog_name=PATH)
 
 MISSING = BEG + ": Error: The \"%s\" %s is missing." + END
-NO_PERM = BEG + ": Error: The %s \"%s\" does not have %s permission." + END
+NO_PERM = BEG + ": Error: \"%s\" does not have %s permission." + END
 
 INVAL = BEG + ": Error: %s \"%s\" is not a %s." + END
 WRONG_EXT = BEG + ": Error: %s must be a %s file.\n    Received \"%s\"" + END
@@ -89,5 +91,5 @@ INVAL_DST = BEG + ": Error: \"%s\" is not a valid destination type."\
             " Choose from \"fqdn\", \"org\", and \"sld\"." + END
 INVAL_PLT = BEG + ": Error: \"%s\" is not a valid plot type. Choose from \"BarHPlot\" and"\
             " \"PiePlot\"." + END
-NON_POS = BEG + ": Error: %s must be a positive integer. Received \"%s\"." + END
+NON_POS = BEG + ": Error: %s must be a positive %s. Received \"%s\"." + END
 
