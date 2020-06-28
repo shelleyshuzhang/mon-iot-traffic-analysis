@@ -21,43 +21,45 @@ protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http",
                     "UDP port: 80": "Http", "UDP port: 443": "Https"}
 
 
-# isError is either 0 or 1
-def print_usage(isError):
-    if isError:
-        print(c.USAGE_STM, file=sys.stderr)
-    else:
-        print(c.USAGE_STM)
-    exit(isError)
+# is_error is either 0 or 1
+def print_usage(is_error):
+    print(c.USAGE_STM, file=sys.stderr) if is_error else print(c.USAGE_STM)
+    exit(is_error)
 
 
-def not_valid_dir(direc, dir_print):
+#f is file path that exists
+#perms is list of permissions to check, which can include ["read", "write", "execute"]
+def check_perms(f, perms):
     errors = False
-    if not os.path.isdir(direc):
-        errors = True
-        print(c.INVAL % (dir_print + " directory", direc, "directory"), file=sys.stderr)
-    else:
-        if not os.access(direc, os.R_OK):
+    perm_map = {"read": os.R_OK, "write": os.W_OK, "execute": os.X_OK}
+    for perm in perms:
+        if not os.access(f, perm_map[perm]):
             errors = True
-            print(c.NO_PERM % ("directory", direc, "read"), file=sys.stderr)
-        if not os.access(direc, os.X_OK):
-            errors = True
-            print(c.NO_PERM % ("directory", direc, "execute"), file=sys.stderr)
+            print(c.NO_PERM % (f, perm), file=sys.stderr)
 
     return errors
 
 
-def is_pos(num, num_desc):
-    is_pos = False
+def not_valid_dir(direc, dir_print):
+    if not os.path.isdir(direc):
+        print(c.INVAL % (dir_print + " directory", direc, "directory"), file=sys.stderr)
+        return True
+
+    return check_perms(direc, ["read", "execute"])
+
+
+def check_pos(num, num_desc, is_int):
+    errors = False
     try:
-        if int(num) > 0:
-            is_pos = True
+        errors = int(num) <= 0 if is_int else float(num) <=0
     except ValueError:
-        pass
+        errors = True
 
-    if not is_pos:
-        print(c.NON_POS % (num_desc, num), file=sys.stderr)
+    if errors:
+        num_type = "integer" if is_int else "real number"
+        print(c.NON_POS % (num_desc, num_type, num), file=sys.stderr)
 
-    return is_pos
+    return errors
 
 
 if __name__ == "__main__":
@@ -70,12 +72,13 @@ if __name__ == "__main__":
     parser.add_argument("-v", dest="in_csv", default="")
     parser.add_argument("-s", dest="software_location", default="")
     parser.add_argument("-c", dest="company", default="unknown")
+    parser.add_argument("-t", dest="time_range", default="1")
     parser.add_argument("-f", dest="fig_dir", default="plots")
     parser.add_argument("-o", dest="out_csv", default="results.csv")
     parser.add_argument("-d", dest="dst_types", default="")
     parser.add_argument("-p", dest="plot_types", default="")
     parser.add_argument("-l", dest="linear", action="store_true", default=False)
-    parser.add_argument("-t", dest="dpi", default="72")
+    parser.add_argument("-e", dest="dpi", default="72")
     parser.add_argument("-n", dest="num_proc", default="1")
     parser.add_argument("-h", dest="help", action="store_true", default=False)
     args = parser.parse_args()
@@ -83,8 +86,8 @@ if __name__ == "__main__":
     if args.help:
         print_usage(0)
 
-    print("Running %s..." % c.PATH)
-    print("Start time: %s\n" % time.strftime("%A %d %B %Y %H:%M:%S %Z", time.localtime(start_time)))
+    print("Running %s...\nStart time: %s\n"
+            % (c.PATH, time.strftime("%A %d %B %Y %H:%M:%S %Z", time.localtime(start_time))))
     # Thursday 11 June 2020 11:37:02 EDT
 
     dir_name = args.dir_name
@@ -126,6 +129,8 @@ if __name__ == "__main__":
         elif not os.path.isfile(args.in_csv):
             errors = True
             print(c.INVAL % ("Input CSV", args.in_csv, "file"), file=sys.stderr)
+        else:
+            errors = check_perms(args.in_csv, ["read"]) or errors
     else:
         software_location += "/destination/analyze.py"
         if not_valid_dir(os.path.dirname(os.path.dirname(software_location)), "IMC'19"):
@@ -136,13 +141,17 @@ if __name__ == "__main__":
             if not os.path.isfile(software_location):
                 errors = True
                 print(c.MISSING % (software_location, "directory"), file=sys.stderr)
-            elif not os.access(software_location, os.R_OK):
-                errors = True
-                print(c.NO_PERM % ("directory", software_location, "read"), file=sys.stderr)
+            else:
+                errors = check_perms(software_location, ["read"]) or errors
+
+    if os.path.isdir(args.fig_dir):
+        errors = check_perms(args.fig_dir, ["write", "execute"]) or errors
 
     if not args.out_csv.endswith(".csv"):
         errors = True
         print(c.WRONG_EXT % ("Output file", "CSV (.csv)", args.out_csv), file=sys.stderr)
+    elif os.path.isfile(args.out_csv):
+        errors = check_perms(args.out_csv, ["write"]) or errors
 
     for dst_type in dst_types:
         if dst_type not in ("sld", "fqdn", "org", ""):
@@ -154,8 +163,9 @@ if __name__ == "__main__":
             errors = True
             print(c.INVAL_PLT % plot_type, file=sys.stderr)
 
-    if not is_pos(args.num_proc, "Number of processes") or not is_pos(args.dpi, "DPI"):
-        errors = True
+    errors = check_pos(args.time_range, "Time range", False) or errors
+    errors = check_pos(args.num_proc, "Number of processes", True) or errors
+    errors = check_pos(args.dpi, "DPI", True) or errors
 
     if errors:
         print_usage(1)
@@ -176,7 +186,7 @@ if __name__ == "__main__":
             cmd = ("python3 %s -i %s -m %s -o %s -n %s"
                    % (software_location, dir_name, mac, in_csv, args.num_proc))
             print("Running destination analysis...\n   " + cmd)
-            os.system(cmd + " > /dev/null")
+            os.system(cmd)
 
         # characterize the parties
         print("Characterizing the parties...")
@@ -250,7 +260,7 @@ if __name__ == "__main__":
 
         # analyze the protocol and ports use; calculate the amount of traffic sent to
         # each destination and protocols, and visualizing the results as plots
-        print("Calculating protocol percentages for encryption analysis and generating plots...")
+
         vis_pro.calc_encrypted_dst_pct(previous_data=result, company=company,
                                        fig_dir=args.fig_dir, fig_dpi=int(args.dpi),
                                        dst_types=dst_types, plot_types=plot_types,
@@ -277,7 +287,5 @@ if __name__ == "__main__":
     if minute != 0:
         sec = sec - minute * 60
 
-    print("Elapsed time: %s hours %s minutes %s seconds" % (hrs, minute, sec))
-
-    print("\nAnalysis finished.")
+    print("Elapsed time: %s hours %s minutes %s seconds\nAnalysis finished." % (hrs, minute, sec))
 
