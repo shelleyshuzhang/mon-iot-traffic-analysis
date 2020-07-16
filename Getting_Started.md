@@ -30,7 +30,7 @@ At this point, the software has been setup for use.
 
 ### Very Basic Usage
 
-Very basic usage: `python3 main.py -i PCAP_DIR -m MAC_ADDR -s IMC_DIR`
+Very basic usage: `sudo python3 main.py -i PCAP_DIR -m MAC_ADDR -s IMC_DIR`
 
 For input, very basic usage requires a directory containing the pcap files for analysis (`-i`), the MAC address of the device from which the input pcap files were generated from (`-m`), and the path to the `intl-iot/` directory of the IMC'19 software (`-s`). An optional `-c` can be used to specify the manufacturer of the device if known.
 
