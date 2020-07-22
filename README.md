@@ -121,7 +121,7 @@ Several plots can be produced for visualization. Plots are generated based on th
 
 #### Encryption Analysis
 
-- For pie plots, a set of plots in the format `<DEV_MFR>_pie_<dst_type>_encryption_traffic.png` are produced. They show the percentage of traffic that is encrypted and the percentage of traffic that is unencrypted.
+- For pie plots, a set of plots in the format `<DEV_MFR>_pie_<dst_type>_encryption_traffic.png` are produced. They show the percentage of traffic that is sent encrypted and the percentage of traffic that is sent unencrypted.
 
 - For horizontal bar plots, plots in the format `<DEV_MFR>_bar_<dst_type>_unencrypted_traffic.png` are produced. They show the destinations of the unencrypted traffic and the amount of traffic being sent to and received from each destination.
 
@@ -135,7 +135,7 @@ Several plots can be produced for visualization. Plots are generated based on th
 
 - A text file, named `<DEV_MFR>_all_<dst_type>.txt`, which lists the specified data by party is produced. This file can be found in the plot directory structure.
 
-- A text file, named `<DEV_MFR>_ping_result.txt` can be found in the directory named `<FIG_DIR>_country_analysis/`. This text file lists each destination pinged along with the time relative to the based time (a ping to harvard.edu). If the ping to harvard.edu fails, the base time is 15 ms. A positive time means the ping is that many milliseconds slower than the base ping, while a negative time means the ping is that many milliseconds faster.
+- A text file, named `<DEV_MFR>_ping_result.txt` can be found in the directory named `<FIG_DIR>_country_analysis/`. This text file lists each destination pinged along with the time it took to ping the destination. A time of `-999 ms` means that the ping timed out.
 
 - If the `-s` option is used, a CSV file, named `<DEV_MFR>_tmp.csv`, which is a temporary file containing the output of running the destination analysis from the IMC'19 software is also generated. This file can be found in `FIG_DIR`.
 

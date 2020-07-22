@@ -26,14 +26,14 @@ protocol_readable_dict = {"1": "human-readable", "0": "human-unreadable",
                           "0.5": "partially human-readable", "-1": "unknown"}
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
 protocol_importance_dict = {"1": "important", "0": "unimportant", "-1": "unknown"}
-protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http", "UDP port: 80": "Http"}
+protocol_details = {"TCP port: 443": "HTTPS", "TCP port: 80": "HTTP", "UDP port: 80": "HTTP"}
 protocol_bar_dict = {"0": "1",
                      "1": "0",
                      "-1": "2"}
 protocol_color_dict = {"1": 'Reds', "0": 'Blues', "-1": "Greens"}
-protocol_name_too_long = {"0": 'other unencrypted destinations',
-                          "1": 'other encrypted destinations',
-                          "-1": 'other unknown destinations'}
+protocol_name_too_long = {"0": 'Other unencrypted destinations',
+                          "1": 'Other encrypted destinations',
+                          "-1": 'Other unknown destinations'}
 patch_dict = {"1": "0",
               "0": "1",
               "2": "-1"}
@@ -66,7 +66,7 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
                                  title="The amount of encrypted and unencrypted traffic "
                                        "sent to each destination " + dst_type_name
                                        + " and protocol&port"
-                                       + " (" + company + " device/in bytes)",
+                                       + " (" + company.capitalize() + " device)",
                                  name_dict=protocol_encrypted_dict,
                                  third_party_color=[protocol_color_dict["0"],
                                                     protocol_color_dict["-1"]],
@@ -94,9 +94,9 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
                 for h in too_small_h:
                     del party_t_dict[h]
             brp.bar_h_plot(data=list(party_t_dict.values()), names=list(party_t_dict.keys()),
-                           title="The percentage of unencrypted traffic sent "
+                           title="The percentages of unencrypted traffic sent "
                                  "to each destination " + dst_type_name
-                                 + " and protocol&port and party (" + company + "/Bytes)",
+                                 + " and protocol&port and party (" + company.capitalize() + ")",
                            color_p=party_color_dict[party_bar_dict["0"]], fig_dpi=barh_fig_dpi,
                            num_name="Amount of traffic shown using log scale (Bytes)",
                            save_name=barh_fig_dir + "/" + company + "_bar_" + dst_type_name
@@ -159,45 +159,45 @@ def group_traffic(dst_pros: list):
         host_full = dst_pro.host.host_full
         org = dst_pro.host.organization
         protocol_port = dst_pro.protocol_port.protocol_port
-        traffic = dst_pro.rcv
+        traffic = dst_pro.snd
         encrypt = dst_pro.protocol_port.encrypted
 
         if dst_pro.protocol_port.imp == "1":
             if protocol_port in protocol_details:
                 protocol_port = protocol_details[protocol_port]
 
-            h_p = host + "(" + protocol_port + ")"
+            h_p = host + " (" + protocol_port + ")"
             if h_p in traffic_encryption_dst[encrypt]:
                 traffic_encryption_dst[encrypt][h_p] += traffic
             else:
                 traffic_encryption_dst[encrypt][h_p] = traffic
 
-            hf_p = host_full + "(" + protocol_port + ")"
+            hf_p = host_full + " (" + protocol_port + ")"
             if hf_p in traffic_encryption_fqdn[encrypt]:
                 traffic_encryption_fqdn[encrypt][hf_p] += traffic
             else:
                 traffic_encryption_fqdn[encrypt][hf_p] = traffic
 
-            ho_p = org + "(" + protocol_port + ")"
+            ho_p = org + " (" + protocol_port + ")"
             if ho_p in traffic_encryption_org[encrypt]:
                 traffic_encryption_org[encrypt][ho_p] += traffic
             else:
                 traffic_encryption_org[encrypt][ho_p] = traffic
 
             if encrypt == "0":
-                p_h_pro = host + "(" + protocol_port + "/" + party + ")"
+                p_h_pro = host + " (" + protocol_port + "/" + party + ")"
                 if p_h_pro in party_dict_unencrypted_dst:
                     party_dict_unencrypted_dst[p_h_pro] += traffic
                 else:
                     party_dict_unencrypted_dst[p_h_pro] = traffic
 
-                p_h_pro_f = host_full + "(" + protocol_port + "/" + party + ")"
+                p_h_pro_f = host_full + " (" + protocol_port + "/" + party + ")"
                 if p_h_pro_f in party_dict_unencrypted_fqdn:
                     party_dict_unencrypted_fqdn[p_h_pro_f] += traffic
                 else:
                     party_dict_unencrypted_fqdn[p_h_pro_f] = traffic
 
-                p_h_pro_o = org + "(" + protocol_port + "/" + party + ")"
+                p_h_pro_o = org + " (" + protocol_port + "/" + party + ")"
                 if p_h_pro_o in party_dict_unencrypted_org:
                     party_dict_unencrypted_org[p_h_pro_o] += traffic
                 else:
@@ -214,7 +214,7 @@ def group_traffic(dst_pros: list):
 # use the proper units for large traffic
 def network_traffic_units(traffic_num: int):
     if traffic_num < 1024:
-        return str(round(traffic_num, 2)) + " Bytes"
+        return str(round(traffic_num, 2)) + " bytes"
     elif 1024 <= traffic_num < 1048576:
         return str(round(traffic_num / 1024, 2)) + " KB"
     elif 1048576 <= traffic_num < 1073741824:

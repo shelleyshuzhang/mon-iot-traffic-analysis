@@ -9,7 +9,7 @@ import gc
 
 
 def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):
-    plt.figure(figsize=(12, 9))
+    plt.figure(figsize=(16, 10))
     plt.rcParams['font.size'] = 12
     palette = plt.get_cmap('Set1')
     labels = []
@@ -20,21 +20,23 @@ def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):
         current_value = party_dict[party].__len__()
         labels.append(name_dict[party] + " - " + str(current_value))
         values.append(current_value)
-        if index == 4:
-            index += 1
         colors.append(palette(index))
+        if index == 4:
+            index += 3
         index += 1
     total_values = np.array(values).sum()
     index_v = 0
     for v in values:
-        percent = round(v / total_values * 100, 1)
-        labels[index_v] += " (" + str(percent) + "%)"
+        percent = round(v / total_values * 100, 2)
+        labels[index_v] += " (" + str('%1.2f' % percent) + "%)"
         index_v += 1
-    plt.pie(values, colors=colors, labels=values, autopct='%1.1f%%',
-            counterclock=False, shadow=True)
-    plt.title(title)
-    plt.legend(labels, loc=3)
-    plt.savefig(save_name, dpi=fig_dpi)
+    plt.pie(values, colors=colors, labels=values, autopct='%1.2f%%', counterclock=False)
+    t = plt.title(title)
+    t.set_ha("left")
+    plt.gca().axis("equal")
+    plt.legend(labels, loc="right", bbox_to_anchor=(0.9, 0.5), bbox_transform=plt.gcf().transFigure)
+    plt.subplots_adjust(left=0.2, bottom=0.1, right=0.7)
+    plt.savefig(save_name, dpi=fig_dpi, bbox_inches="tight")
     print("    Plot saved to \"" + save_name + "\"")
     plt.close()
 
@@ -45,7 +47,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
     party_hosts_traffic = copy.deepcopy(party_hosts_traffic)
     if empty_parties[0]:
         plt.rcParams['font.size'] = 16
-        current = plt.figure(figsize=(16, 10))
+        current = plt.figure(figsize=(20, 12))
         sub1 = current.add_subplot(1, 2, 1)
         sub3 = current.add_subplot(1, 2, 2)
         sub2 = None
@@ -53,7 +55,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
         current.subplots_adjust(wspace=-0.3)
     elif empty_parties[1]:
         plt.rcParams['font.size'] = 16
-        current = plt.figure(figsize=(16, 10))
+        current = plt.figure(figsize=(20, 12))
         sub1 = current.add_subplot(1, 2, 1)
         sub2 = current.add_subplot(1, 2, 2)
         sub3 = None
@@ -102,18 +104,18 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
         if col_index == 4:
             col_index += 3
         col_index += 1
+    
     values = np.array(values)
     labels = np.char.array(labels)
     por_cent = 100. * values / values.sum()
-    patches, texts = sub1.pie(values, colors=colors, counterclock=False,
-                              shadow=True, radius=1)
-    labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(labels, por_cent)]
+    patches, texts = sub1.pie(values, colors=colors, counterclock=False, radius=1)
+    labels = ['{0} - {1:1.2f}%'.format(i, j) for i, j in zip(labels, por_cent)]
     l_index = 0
     while l_index < labels.__len__():
         labels[l_index] += (" (" + num_labels[l_index] + ")")
         l_index += 1
     # move the position of pie plot labels
-    sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(0.3, 0.0))
+    sub1.legend(patches, labels, loc='center left', bbox_to_anchor=(0.25, -0.04))
 
     if sub2 is not None and sub3 is not None:
         sub1.set_title(title, x=0.5, y=1.05)
@@ -124,7 +126,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
                           legend_pos=(0.9, 1.),
-                          patch_dict=patch_dict)
+                          patch_dict=patch_dict,
+                          on_left=False)
         plot_bar_attached(sub1=sub1,
                           sub2=sub2,
                           third_party_color=third_party_color[0],
@@ -132,7 +135,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
                           legend_pos=(0.04, 1.),
-                          patch_dict=patch_dict)
+                          patch_dict=patch_dict,
+                          on_left=True)
     elif sub3 is not None:
         sub1.set_title(title, x=0.8, y=1.1)
         plot_bar_attached(sub1=sub1,
@@ -142,7 +146,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
                           legend_pos=(0.92, 1.),
-                          patch_dict=patch_dict)
+                          patch_dict=patch_dict,
+                          on_left=False)
     elif sub2 is not None:
         sub1.set_title(title, x=0.8, y=1.1)
         plot_bar_attached(sub1=sub1,
@@ -152,7 +157,8 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
                           party_hosts_traffic=party_hosts_traffic,
                           values=values,
                           legend_pos=(0.92, 1.),
-                          patch_dict=patch_dict)
+                          patch_dict=patch_dict,
+                          on_left=False)
 
     current.savefig(save_name, dpi=fig_dpi)
     print("    Plot saved to \"" + save_name + "\"")
@@ -162,7 +168,7 @@ def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot
 
 def plot_bar_attached(sub1, sub2, third_party_color,
                       party_bar_plot, party_hosts_traffic,
-                      values, legend_pos, patch_dict):
+                      values, legend_pos, patch_dict, on_left):
     # bar for second party
     x_pos = 0
     bottom = 0
@@ -180,7 +186,7 @@ def plot_bar_attached(sub1, sub2, third_party_color,
         sub_index = 60
 
     df = pd.DataFrame.from_dict(all_hosts, orient='index')
-    df = df.sort_values(by=0, ascending=False)
+    df = df.sort_values(by=0)
     all_hosts = df.to_dict()[0]
 
     try:
@@ -207,29 +213,26 @@ def plot_bar_attached(sub1, sub2, third_party_color,
 
         # write the percentage on the bar plot
         if (too_many_percent and v > 0.015) or (not too_many_percent and v > 0.01):
-            sub2.text(x_pos, y_pos,
-                      # "%g%%" % (round(sub2.patches[color_index].get_height(), 4) * 100),
-                      vis.network_traffic_units(all_hosts[v_name]),
-                      ha='center')
+            sub2.text(x_pos, y_pos, vis.network_traffic_units(all_hosts[v_name]), ha='center')
 
         sub2_por_cent.append(round(sub2.patches[color_index].get_height(), 4) * 100)
         color_index += 1
 
     sub2_por_cent = reversed(np.array(sub2_por_cent))
     sub2_labels = reversed(np.char.array(list(all_hosts.keys())))
-    sub2_labels = ['{0} - {1:1.2f} %'.format(i, j) for i, j in zip(sub2_labels, sub2_por_cent)]
+    sub2_labels = ['{0} - {1:1.2f}%'.format(i, j) for i, j in zip(sub2_labels, sub2_por_cent)]
     # move the position of bar plot labels
     sub2.legend(reversed(sub2.patches), sub2_labels,
-                loc='upper center', bbox_to_anchor=legend_pos)
+            loc='upper center', bbox_to_anchor=legend_pos)
     sub2.axis('off')
     # 2.5
     sub2.set_xlim(-2.5 * width, 2.5 * width)
 
     # draw connecting lines
-    theta1, theta2 = sub1.patches[int(party_bar_plot) * 2].theta1, \
-                     sub1.patches[int(party_bar_plot) * 2].theta2
-    center, r = sub1.patches[int(party_bar_plot) * 2].center, \
-                sub1.patches[int(party_bar_plot) * 2].r
+    theta1, theta2 = sub1.patches[int(party_bar_plot)].theta1, \
+                     sub1.patches[int(party_bar_plot)].theta2
+    center, r = sub1.patches[int(party_bar_plot)].center, \
+                sub1.patches[int(party_bar_plot)].r
     bar_height = sum([item.get_height() for item in sub2.patches])
 
     x1 = r * np.cos(np.pi / 180 * theta1) + center[0]
@@ -244,14 +247,15 @@ def plot_bar_attached(sub1, sub2, third_party_color,
         height1 = 0
         height2 = bar_height
 
-    con2 = ConnectionPatch(xyA=(- width / 2, height2), xyB=(x2, y2),
+    bar_line_pos = width if on_left else - width
+    con2 = ConnectionPatch(xyA=(bar_line_pos / 2, height2), xyB=(x2, y2),
                            coordsA="data", coordsB="data",
                            axesA=sub2, axesB=sub1)
     con2.set_color([0, 0, 0])
     con2.set_linewidth(2)
     sub2.add_artist(con2)
 
-    con1 = ConnectionPatch(xyA=(- width / 2, height1), xyB=(x1, y1), coordsA="data",
+    con1 = ConnectionPatch(xyA=(bar_line_pos / 2, height1), xyB=(x1, y1), coordsA="data",
                            coordsB="data", axesA=sub2, axesB=sub1)
     con1.set_color([0, 0, 0])
     con1.set_linewidth(2)

@@ -21,12 +21,6 @@ def read_dst_csv_after_ping(pre_results, dir_path, company, script_path):
     ct_dict = read_json_ct(script_path + "/"
                            + "abroad_traffic_analysis/country_codes.json")
 
-    # ping harvard university to get the base respond time, assuming
-    # our student will use this in US
-    base_time = ping_host("harvard.edu")
-    if base_time == -999:
-        base_time = 15
-
     #get dict of unique ip addresses along with initial country
     ip_ct = Manager().dict()
     for dp in pre_results:
@@ -36,7 +30,7 @@ def read_dst_csv_after_ping(pre_results, dir_path, company, script_path):
     procs = []
     file_results = Manager().list()
     for ip in ip_ct.keys():
-        p = Process(target=run_pings, args=(ip, ip_ct, ct_dict, base_time, file_results))
+        p = Process(target=run_pings, args=(ip, ip_ct, ct_dict, file_results))
         procs.append(p)
         p.start()
         time.sleep(0.5)
@@ -52,11 +46,11 @@ def read_dst_csv_after_ping(pre_results, dir_path, company, script_path):
     return pre_results
 
 
-def run_pings(ip, ip_ct, ct_dict, base_time, file_results):
-    ip_ct[ip] = confirm_country(ip, ip_ct[ip], ct_dict, base_time, file_results)
+def run_pings(ip, ip_ct, ct_dict, file_results):
+    ip_ct[ip] = confirm_country(ip, ip_ct[ip], ct_dict, file_results)
 
 
-def confirm_country(ip, country, ct_dict, base_time, file_results):
+def confirm_country(ip, country, ct_dict, file_results):
     if not dtf_pt.detect_local_host(host=country):
         if country.upper() in {"", " ", "N/A"}:
             country = "XX"
@@ -65,8 +59,6 @@ def confirm_country(ip, country, ct_dict, base_time, file_results):
 
         # get the avg response time in ms
         mean_ping_ms = ping_host(ip)
-        if mean_ping_ms != -999:
-            mean_ping_ms -= base_time
 
         # write the average round-trip ping time to a txt file
         file_results.append(ip + " ping round-trip: "
@@ -75,7 +67,7 @@ def confirm_country(ip, country, ct_dict, base_time, file_results):
 
         # check the country for each address based
         # on previous data and ping result
-        if country != "US" and region != "north america":
+        if country != "US" and region != "north america" and mean_ping_ms != -999:
             if region in {"south america", "europe", "africa"} and mean_ping_ms < 40:
                 return "US"
             elif region == "middle east" and mean_ping_ms < 60:

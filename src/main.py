@@ -254,7 +254,7 @@ if __name__ == "__main__":
     # sent to each party, and generate the plots
     if dst_types != [""] and plot_types != [""]:
         print("Calculating party percentages and generating plots...")
-        vis.calc_party_pct(csv_filename=out_csv, company=company, fig_dir=args.fig_dir,
+        vis.calc_party_pct(previous_data=result, company=company, fig_dir=args.fig_dir,
                            fig_dpi=int(args.dpi), dst_types=dst_types, plot_types=plot_types,
                            linear=args.linear)
 

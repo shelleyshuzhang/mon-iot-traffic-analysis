@@ -20,12 +20,12 @@ party_index_dict = {"Physical": "-2", "Local": "-1",
                     "First party": "0", "Support party": "1",
                     "Third party": "2", "Advertisers": "2.5",
                     "Analytics": "3"}
-host_name_too_long = {"0": 'other first party',
-                      "1": 'other support party',
-                      "2": 'other third party',
-                      "-1": 'other local party',
-                      "2.5": 'other advertisers',
-                      "3": 'other analytics'}
+host_name_too_long = {"0": 'Other first parties',
+                      "1": 'Other support parties',
+                      "2": 'Other third parties',
+                      "-1": 'Other local parties',
+                      "2.5": 'Other advertisers',
+                      "3": 'Other analytics'}
 dst_type_name_dict = {"SLD": "Second level domain",
                       "FQDN": "Fully qualified domain",
                       "ORG": "Organization"}
@@ -37,7 +37,7 @@ patch_dict = {"0": '0',
               "5": '3'}
 
 
-def calc_party_pct(csv_filename: str, company: str, fig_dir: str, fig_dpi: int,
+def calc_party_pct(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
                    dst_types: list, plot_types: list, linear: bool):
     party_sld_traffic = {"0": {}, "1": {}, "2": {},
                          "-1": {}, "2.5": {}, "3": {}}
@@ -48,32 +48,29 @@ def calc_party_pct(csv_filename: str, company: str, fig_dir: str, fig_dpi: int,
 
     fig_dir = check_dir_exist(fig_dir, "dst_party_analysis")
 
-    with open(csv_filename, mode="r") as csv_file1:
-        csv_reader = csv.DictReader(csv_file1)
+    for dst_pro in previous_data:
+        current_domain_sld: str = dst_pro.host.host
+        current_domain_fqdn: str = dst_pro.host.host_full
+        current_domain_org: str = dst_pro.host.organization
+        current_party = dst_pro.host.party
+        current_party = party_index_dict[current_party]
+        size = int(dst_pro.snd)
 
-        for row in csv_reader:
-            current_domain_sld: str = row['host']
-            current_domain_fqdn: str = row['host_full']
-            current_domain_org: str = row['organization']
-            current_party = row['party']
-            current_party = party_index_dict[current_party]
-            size = int(row['packet_rcv'])
+        if current_party != "-2":
+            if current_domain_sld in party_sld_traffic[current_party]:
+                party_sld_traffic[current_party][current_domain_sld] += size
+            else:
+                party_sld_traffic[current_party][current_domain_sld] = size
 
-            if current_party != "-2":
-                if current_domain_sld in party_sld_traffic[current_party]:
-                    party_sld_traffic[current_party][current_domain_sld] += size
-                else:
-                    party_sld_traffic[current_party][current_domain_sld] = size
+            if current_domain_fqdn in party_fqdn_traffic[current_party]:
+                party_fqdn_traffic[current_party][current_domain_fqdn] += size
+            else:
+                party_fqdn_traffic[current_party][current_domain_fqdn] = size
 
-                if current_domain_fqdn in party_fqdn_traffic[current_party]:
-                    party_fqdn_traffic[current_party][current_domain_fqdn] += size
-                else:
-                    party_fqdn_traffic[current_party][current_domain_fqdn] = size
-
-                if current_domain_org in party_org_traffic[current_party]:
-                    party_org_traffic[current_party][current_domain_org] += size
-                else:
-                    party_org_traffic[current_party][current_domain_org] = size
+            if current_domain_org in party_org_traffic[current_party]:
+                party_org_traffic[current_party][current_domain_org] += size
+            else:
+                party_org_traffic[current_party][current_domain_org] = size
 
     def make_pie_plot(dst_type_name, party_t_dict, fig_dpi, pie_fig_dir):
         pie_fig_dir = check_dir_exist(pie_fig_dir, "pie")
@@ -81,9 +78,8 @@ def calc_party_pct(csv_filename: str, company: str, fig_dir: str, fig_dpi: int,
         dst_type_name = dst_type_name.upper()
         # plot the percentage of different parties - destinations
         prp.pie_plot_percentage(party_dict=party_t_dict,
-                                title="The percentage of first, support and "
-                                      "third parties in all destination "
-                                      + dst_type_name + "s (" + company + " device)",
+                                title="The percentages of each party in all destination "
+                                      + dst_type_name + "s (" + company.capitalize() + " device)",
                                 save_name=pie_fig_dir + "/" + company
                                           + "_device_parties_pie_"
                                           + dst_type_name + ".png",
@@ -119,7 +115,7 @@ def calc_party_pct(csv_filename: str, company: str, fig_dir: str, fig_dpi: int,
                                                + "_" + p1.split()[0] + "_party_traffic.png",
                                      title="The percentage of traffic sent "
                                            "to each destination " + dst_type_name
-                                           + " (" + company + " device/in bytes)",
+                                           + " (" + company.capitalize() + " device)",
                                      name_dict=party_name_dict,
                                      third_party_color=[party_color_dict[party_bar_dict[p]],
                                                         party_color_dict[party_bar_dict[p1]]],
@@ -157,7 +153,7 @@ def calc_party_pct(csv_filename: str, company: str, fig_dir: str, fig_dpi: int,
 
                 brp.bar_h_plot(data=list(all_hosts.values()), names=list(all_hosts.keys()),
                                title="The percentage of traffic sent to each destination "
-                                     + dst_type_name + " (" + company + "/" + p + ")",
+                                     + dst_type_name + " (" + company.capitalize() + "/" + p + ")",
                                color_p=party_color_dict[party_bar_dict[p]], fig_dpi=fig_dpi,
                                num_name="Amount of traffic shown using log scale (Bytes)",
                                save_name=barh_fig_dir + "/" + company + "_bar_" + dst_type_name

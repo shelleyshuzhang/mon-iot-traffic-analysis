@@ -6,9 +6,9 @@ from dst_characterize import identify_party as dtf_pt
 
 country_name_dict = {"0": "US/Local", "1": "Abroad", "-1": "Unknown"}
 country_color_dict = {"0": 'Reds', "1": 'Blues', "-1": 'Greens'}
-country_name_too_long = {"0": 'other US or local destinations',
-                         "1": 'other abroad destinations',
-                         "-1": 'other unknown destinations'}
+country_name_too_long = {"0": 'Other US or local destinations',
+                         "1": 'Other abroad destinations',
+                         "-1": 'Other unknown destinations'}
 patch_dict = {"0": "0",
               "1": "1",
               "2": "-1"}
@@ -43,8 +43,8 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
                                            + dst_type_name + "_abroad_traffic.png",
                                  title='The amount of traffic sent to each '
                                        'destination ' + dst_type_name +
-                                       ' in the USA and abroad (' + company +
-                                       ' device/in bytes)',
+                                       ' in the USA and abroad (' + company.capitalize() +
+                                       ' device)',
                                  name_dict=country_name_dict,
                                  third_party_color=[country_color_dict["1"],
                                                     country_color_dict["-1"]],
@@ -72,9 +72,9 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
                 for h in too_small_h:
                     del party_t_dict[h]
             brp.bar_h_plot(data=list(party_t_dict.values()), names=list(party_t_dict.keys()),
-                           title="The percentage of traffic sent "
+                           title="The percentages of traffic sent "
                                  "abroad to each destination " + dst_type_name
-                                 + " and protocol&port and party (" + company + "/Bytes)",
+                                 + " and protocol&port and party (" + company.capitalize() + ")",
                            color_p=country_color_dict["1"], fig_dpi=fig_dpi,
                            num_name="Amount of traffic shown using log scale (Bytes)",
                            save_name=barh_fig_dir + "/" + company + "_bar_" + dst_type_name
@@ -125,7 +125,7 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
 
 def read_dst_countries(result):
     def add_to_pie_groups(group_dict, dst: str):
-        c_name = country + '(' + dst + ')'
+        c_name = country + ' (' + dst + ')'
         if dtf_pt.detect_local_host(host=country) or country == "US":
             if c_name in group_dict["0"]:
                 group_dict["0"][c_name] += traffic
@@ -144,7 +144,7 @@ def read_dst_countries(result):
                 group_dict["1"][c_name] = traffic
 
     def add_to_bar_plot(plot_group, c_name):
-        c_name = country + "(" + c_name + "-" + protocol_port + ")"
+        c_name = country + " (" + c_name + "-" + protocol_port + ")"
         if c_name in plot_group:
             plot_group[c_name] += traffic
         else:
@@ -161,7 +161,7 @@ def read_dst_countries(result):
         host_full = dst_pro.host.host_full
         org = dst_pro.host.organization
         protocol_port = dst_pro.protocol_port.protocol_port
-        traffic = dst_pro.rcv
+        traffic = dst_pro.snd
         country: str = dst_pro.host.country
 
         if protocol_port in protocol_details:
