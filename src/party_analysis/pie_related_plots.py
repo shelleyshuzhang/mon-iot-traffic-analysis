@@ -200,6 +200,8 @@ def plot_bar_attached(sub1, sub2, third_party_color,
                 sub_index += 15
     except ZeroDivisionError:
         return
+
+    colors_sub.reverse()
     color_index = 0
     sub2_por_cent = []
     too_many_percent = values_sub1.__len__() > 15
