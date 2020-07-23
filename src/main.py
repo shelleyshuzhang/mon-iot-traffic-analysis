@@ -10,6 +10,7 @@ from dst_characterize import identify_party as idtpt
 from party_analysis import visualization_parties as vis
 from protocol_analysis import protocol_analysis as ptals
 from protocol_analysis import visualization_protocols as vis_pro
+from protocol_analysis import load_csv
 from abroad_traffic_analysis import identify_abroad_adr as dtf_ab_adr
 from abroad_traffic_analysis import visualization_abroad as vis_abr
 import Constants as c
@@ -17,8 +18,8 @@ import Constants as c
 software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
 current_location = "/Users/zhangshu/PycharmProjects/neu_mon-iot-_network_traffic_analysis"
 protocol_encrypted_dict = {"1": "encrypted", "0": "unencrypted", "-1": "unknown"}
-protocol_details = {"TCP port: 443": "Https", "TCP port: 80": "Http",
-                    "UDP port: 80": "Http", "UDP port: 443": "Https"}
+protocol_details = {"TCP port: 443": "HTTPS", "TCP port: 80": "HTTP",
+                    "UDP port: 80": "HTTP", "UDP port: 443": "HTTPS"}
 
 
 # is_error is either 0 or 1
@@ -175,7 +176,9 @@ if __name__ == "__main__":
     pkl_name = out_csv.split(".")[0]
     pkl_name += '_destinations.pkl'
 
-    if os.path.isfile(pkl_name):
+    if os.path.isfile(out_csv):
+        result = load_csv.load(c.SCRIPT_DIR, out_csv)
+    elif os.path.isfile(pkl_name):
         with open(pkl_name, 'rb') as input_pkl:
             result = pickle.load(input_pkl)
     else:
