@@ -1,7 +1,7 @@
 from csv import reader
 
-from . import DestinationPro
 from . import Destination
+from . import DestinationPro
 from . import ProtocolPort
 
 

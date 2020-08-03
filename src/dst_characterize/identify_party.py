@@ -1,11 +1,12 @@
 import csv
+import os
 import re
+import subprocess
+from subprocess import check_output
+
 # github for adblock parser: https://github.com/scrapinghub/adblockparser
 # pip install adblockparser
 import adblockparser
-from subprocess import check_output
-import subprocess
-import os
 
 options = ('device', 'ip', 'host', 'host_full', 'traffic_snd',
            'traffic_rcv', 'packet_snd', 'packet_rcv', 'country',
@@ -18,6 +19,7 @@ party_dict = {"-2": "Physical", "-1": "Local",
               "3": "Analytics"}
 company_name_dict = {"google": "Google LLC", "amazon": "Amazon.com Inc."}
 FNULL = open(os.devnull, "w")
+
 
 # find all the third parties in the list of pcap
 # files and write them to a txt file

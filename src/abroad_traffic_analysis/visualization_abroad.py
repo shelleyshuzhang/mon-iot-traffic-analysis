@@ -1,4 +1,5 @@
 import numpy as np
+
 from party_analysis import visualization_parties as vsp
 from party_analysis import pie_related_plots as prp
 from party_analysis import bar_related_plots as brp

@@ -1,11 +1,12 @@
 import copy
+import gc
 
 import matplotlib.pyplot as plt
-from matplotlib.patches import ConnectionPatch
 import numpy as np
 import pandas as pd
+from matplotlib.patches import ConnectionPatch
+
 from protocol_analysis import visualization_protocols as vis
-import gc
 
 
 def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):

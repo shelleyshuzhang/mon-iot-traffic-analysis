@@ -1,20 +1,16 @@
-import copy
 import csv
 import os
-
-from multiprocessing import Process
 from multiprocessing import Manager
-from scapy.utils import PcapReader
-from protocol_analysis import Destination, DestinationPro, ProtocolPort
+from multiprocessing import Process
 
 ####### must import the packet in scapy in order to see the results #######
-from scapy.layers.dns import *
 from scapy import *
 from scapy.layers import *
-from scapy.contrib.igmp import IGMP
-from scapy.layers.dhcp import DHCP
+from scapy.layers.dns import *
 from scapy.layers.inet import *
-from scapy.layers.ntp import NTP
+from scapy.utils import PcapReader
+
+from protocol_analysis import Destination, DestinationPro, ProtocolPort
 
 protocol_known_dict = {"1": "well-known", "-1": "unknown",
                        "0.5": "registered", "0": "not-well-known"}
@@ -26,6 +22,7 @@ protocol_importance_dict = {"1": "important", "0": "unimportant", "-1": "unknown
 dst_info = {}
 protocol_info = {}
 filenames = []
+
 
 def run(dir_name, device_mac, script_dir, previous_info, num_proc):
     global filenames
@@ -94,14 +91,14 @@ def dst_protocol_analysis(pid, d_mac, result_list):
                     prot = ProtocolPort.ProtocolPort(p_protocol, '-1', '-1', '-1', '-1')
 
                 index = 0
-                isOld = False
+                is_old = False
                 for dst_pro in result:
                     if host == dst_pro.host and prot == dst_pro.protocol_port:
-                        isOld = True
+                        is_old = True
                         break
                     index += 1
 
-                if isOld:
+                if is_old:
                     if snd_rcv == 'snd':
                         result[index].add_snd(packet_len)
                         result[index].add_ps(1)

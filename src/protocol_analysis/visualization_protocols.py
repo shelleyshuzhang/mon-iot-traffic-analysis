@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import ConnectionPatch
-from party_analysis import visualization_parties as vsp
-from party_analysis import pie_related_plots as prp
+
 from party_analysis import bar_related_plots as brp
+from party_analysis import pie_related_plots as prp
+from party_analysis import visualization_parties as vsp
 
 party_name_dict = {"-1": "Local", "0": "First party",
                    "1": "Support party", "2": "Third party",

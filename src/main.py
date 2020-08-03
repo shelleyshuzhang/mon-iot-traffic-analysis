@@ -1,19 +1,19 @@
+import argparse
 import csv
 import os
 import pickle
-import sys
 import re
-import argparse
+import sys
 import time
 
-from dst_characterize import identify_party as idtpt
-from party_analysis import visualization_parties as vis
-from protocol_analysis import protocol_analysis as ptals
-from protocol_analysis import visualization_protocols as vis_pro
-from protocol_analysis import load_csv
+import Constants as c
 from abroad_traffic_analysis import abroad_analysis as abr_ana
 from abroad_traffic_analysis import visualization_abroad as vis_abr
-import Constants as c
+from dst_characterize import identify_party as idtpt
+from party_analysis import visualization_parties as vis
+from protocol_analysis import load_csv
+from protocol_analysis import protocol_analysis as ptals
+from protocol_analysis import visualization_protocols as vis_pro
 
 software_location = "/Users/zhangshu/PycharmWorkspace/intl-iot-new-version-intest"
 current_location = "/Users/zhangshu/PycharmProjects/neu_mon-iot-_network_traffic_analysis"
@@ -50,9 +50,8 @@ def not_valid_dir(direc, dir_print):
 
 
 def check_pos(num, num_desc, is_int):
-    errors = False
     try:
-        errors = int(num) <= 0 if is_int else float(num) <=0
+        errors = int(num) <= 0 if is_int else float(num) <= 0
     except ValueError:
         errors = True
 

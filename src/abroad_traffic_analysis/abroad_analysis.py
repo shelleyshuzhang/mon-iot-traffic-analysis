@@ -1,8 +1,9 @@
+import json
 import os
 from subprocess import Popen, PIPE, STDOUT
-import json
 
 #Output TXT file: IP, min_ping_time
+
 
 def ping_ips(pre_results, dir_path, company, script_path):
     #Populate dict with non-local ip to country

@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 PATH = sys.argv[0]
 SCRIPT_DIR = os.path.dirname(PATH)
