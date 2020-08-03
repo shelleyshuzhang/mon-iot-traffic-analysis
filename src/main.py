@@ -11,7 +11,7 @@ from party_analysis import visualization_parties as vis
 from protocol_analysis import protocol_analysis as ptals
 from protocol_analysis import visualization_protocols as vis_pro
 from protocol_analysis import load_csv
-from abroad_traffic_analysis import identify_abroad_adr as dtf_ab_adr
+from abroad_traffic_analysis import abroad_analysis as abr_ana
 from abroad_traffic_analysis import visualization_abroad as vis_abr
 import Constants as c
 
@@ -207,14 +207,11 @@ if __name__ == "__main__":
 
         # check if the traffic is sent abroad
         print("Analyzing abroad traffic...")
-        result = dtf_ab_adr.read_dst_csv_after_ping(pre_results=result,
-                                                    dir_path=args.fig_dir,
-                                                    company=company,
-                                                    script_path=c.SCRIPT_DIR)
+        result = abr_ana.ping_ips(result, args.fig_dir, company, c.SCRIPT_DIR)
 
         with open(pkl_name, 'wb') as output:
             pickle.dump(result, output, pickle.HIGHEST_PROTOCOL)
-            print("Data saved to %s" % pkl_name)
+            print("Data saved to \"%s\"" % pkl_name)
 
         # write the result to a csv file
         out_csv_dir = os.path.dirname(out_csv)
