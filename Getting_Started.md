@@ -8,7 +8,7 @@ Setup involves setting up the destination analysis part of the IMC'19 code.
 
 1) Read the [System Setup](https://github.com/dng24/intl-iot/blob/master/Getting_Started.md#system-setup) section in the Getting Started document of the IMC'19 code.
 
-2) Follow the instructions in the [Environment Setup](https://github.com/dng24/intl-iot/blob/master/Getting_Started.md#environment-setup) section in the Getting Started document of the IMC'19 code. **Note: Because this code must be run with `sudo`, you might have to install the dependencies in the IMC'19 code using `sudo`.**
+2) Follow the instructions in the [Environment Setup](https://github.com/dng24/intl-iot/blob/master/Getting_Started.md#environment-setup) section in the Getting Started document of the IMC'19 code.
 
 3) Follow the instructions in the [Destination Analysis Setup](https://github.com/dng24/intl-iot/blob/master/Getting_Started.md#setup) section of the Getting Started document of the IMC'19 code.
 

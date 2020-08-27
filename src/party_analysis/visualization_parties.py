@@ -39,12 +39,9 @@ patch_dict = {"0": '0',
 
 def calc_party_pct(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
                    dst_types: list, plot_types: list, linear: bool):
-    party_sld_traffic = {"0": {}, "1": {}, "2": {},
-                         "-1": {}, "2.5": {}, "3": {}}
-    party_fqdn_traffic = {"0": {}, "1": {}, "2": {},
-                          "-1": {}, "2.5": {}, "3": {}}
-    party_org_traffic = {"0": {}, "1": {}, "2": {},
-                         "-1": {}, "2.5": {}, "3": {}}
+    party_sld_traffic = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
+    party_fqdn_traffic = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
+    party_org_traffic = {"0": {}, "1": {}, "2": {}, "-1": {}, "2.5": {}, "3": {}}
 
     fig_dir = check_dir_exist(fig_dir, "dst_party_analysis")
 
@@ -81,15 +78,13 @@ def calc_party_pct(previous_data: list, company: str, fig_dir: str, fig_dpi: int
                                 title="The percentages of each party in all destination "
                                       + dst_type_name + "s (" + company.capitalize() + " device)",
                                 save_name=pie_fig_dir + "/" + company
-                                          + "_device_parties_pie_"
-                                          + dst_type_name + ".png",
+                                          + "_device_parties_pie_" + dst_type_name + ".png",
                                 name_dict=party_name_dict, fig_dpi=fig_dpi)
 
         # write all the dst by party for the device
         dst_filename = pie_fig_dir + "/" + company + "_all_" + dst_type_name + ".txt"
         write_hosts_by_party(party_dict=party_t_dict, fname=dst_filename)
-        print("    " + dst_type_name_dict[dst_type_name]
-              + "s written to \"" + dst_filename + "\"")
+        print("    " + dst_type_name_dict[dst_type_name] + "s written to \"" + dst_filename + "\"")
 
         # plot traffic sent to different parties - destinations
         for p in party_bar_dict:
@@ -108,20 +103,19 @@ def calc_party_pct(previous_data: list, company: str, fig_dir: str, fig_dpi: int
             non_data1 = party_t_dict[index1].__len__() == 0
             non_data2 = party_t_dict[index2].__len__() == 0
             if not non_data1 or not non_data2:
-                prp.plot_traffic_dst(party_hosts_traffic=party_t_dict,
-                                     party_bar_plot=[party_bar_dict[p], party_bar_dict[p1]],
-                                     save_name=pie_fig_dir + "/" + company + "_pie_"
-                                               + dst_type_name + "_" + p.split()[0]
-                                               + "_" + p1.split()[0] + "_party_traffic.png",
-                                     title="The percentage of traffic sent "
-                                           "to each destination " + dst_type_name
-                                           + " (" + company.capitalize() + " device)",
-                                     name_dict=party_name_dict,
-                                     third_party_color=[party_color_dict[party_bar_dict[p]],
-                                                        party_color_dict[party_bar_dict[p1]]],
-                                     host_name_too_long=host_name_too_long,
-                                     empty_parties=[non_data1, non_data2],
-                                     fig_dpi=fig_dpi, patch_dict=patch_dict)
+                prp.plot_dst(party_hosts_traffic=party_t_dict,
+                             party_bar_plot=[party_bar_dict[p], party_bar_dict[p1]],
+                             save_name=pie_fig_dir + "/" + company + "_pie_" + dst_type_name
+                                       + "_" + p.split()[0] + "_" + p1.split()[0]
+                                       + "_party_traffic.png",
+                             title="The percentage of traffic sent to each destination "
+                                   + dst_type_name + " (" + company.capitalize() + " device)",
+                             name_dict=party_name_dict,
+                             third_party_color=[party_color_dict[party_bar_dict[p]],
+                                                party_color_dict[party_bar_dict[p1]]],
+                             host_name_too_long=host_name_too_long,
+                             empty_parties=[non_data1, non_data2],
+                             fig_dpi=fig_dpi, patch_dict=patch_dict)
 
     def make_bar_h_plot(party_t_dict, dst_type_name, fig_dpi, barh_fig_dir):
         barh_fig_dir = check_dir_exist(barh_fig_dir, "barH")
@@ -162,41 +156,29 @@ def calc_party_pct(previous_data: list, company: str, fig_dir: str, fig_dpi: int
     def make_plot(input_plot_type: str, input_dst_type: str, fig_dpi: int):
         if input_plot_type == "pieplot":
             if input_dst_type == "sld":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=party_sld_traffic,
-                              fig_dpi=fig_dpi,
-                              pie_fig_dir=fig_dir)
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=party_sld_traffic,
+                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=party_fqdn_traffic,
-                              fig_dpi=fig_dpi,
-                              pie_fig_dir=fig_dir)
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=party_fqdn_traffic,
+                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=party_org_traffic,
-                              fig_dpi=fig_dpi,
-                              pie_fig_dir=fig_dir)
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=party_org_traffic,
+                              fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
         elif input_plot_type == "barhplot":
             if input_dst_type == "sld":
-                make_bar_h_plot(party_t_dict=party_sld_traffic,
-                                dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi,
-                                barh_fig_dir=fig_dir)
+                make_bar_h_plot(party_t_dict=party_sld_traffic, dst_type_name=input_dst_type,
+                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
-                make_bar_h_plot(party_t_dict=party_fqdn_traffic,
-                                dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi,
-                                barh_fig_dir=fig_dir)
+                make_bar_h_plot(party_t_dict=party_fqdn_traffic, dst_type_name=input_dst_type,
+                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
-                make_bar_h_plot(party_t_dict=party_org_traffic,
-                                dst_type_name=input_dst_type,
-                                fig_dpi=fig_dpi,
-                                barh_fig_dir=fig_dir)
+                make_bar_h_plot(party_t_dict=party_org_traffic, dst_type_name=input_dst_type,
+                                fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 
     if linear:
         for plot_type, dst_type in zip(plot_types, dst_types):

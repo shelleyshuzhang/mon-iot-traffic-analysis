@@ -42,6 +42,11 @@ Required arguments:
 Optional arguments:
   -c DEV_MFR  company that created the device that generated the data in PCAP_DIR;
                 used to identify first parties (Default = unknown)
+  -r INTERVAL the interval in milliseconds between each ping sent in abroad analysis;
+                must be a positive integer (Default = 25)
+  -u COUNT    the number of pings to send per destination to determine the time to
+                contact a destination in abroad analysis; must be a positive integer;
+                (Default = 5)
   -t TIME_RNG time range, in number of days, to split pcaps into for longitudinal
                 analysis; can be fractions of a day (Default = 1)
   -f FIG_DIR  path to a directory to place the generated plots; will be generated

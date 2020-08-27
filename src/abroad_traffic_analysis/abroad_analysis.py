@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE, STDOUT
 #Output TXT file: IP, min_ping_time
 
 
-def ping_ips(pre_results, dir_path, company, script_path):
+def ping_ips(pre_results, dir_path, company, script_path, interval, count):
     #Populate dict with non-local ip to country
     ip_ct = {}
     for dp in pre_results:
@@ -23,10 +23,12 @@ def ping_ips(pre_results, dir_path, company, script_path):
         f.write("\n".join(ip_ct.keys()))
 
     #Ping each unique non-local IP address using fping
-    #fping sends a ping every 25 ms in the order of IPs in ping_result_file; will loop through file
-    #5 times, meaning each IP pinged 5 times; timeout is 1 second; fping sends results to stderr
-    ping_results = Popen("fping -i 25 -c 5 -q -f %s" % ping_result_file, shell=True, stdin=PIPE,
-                         stdout=PIPE, stderr=STDOUT, close_fds=True).stdout.read().decode("utf-8")
+    #fping sends a ping every {interval} ms in the order of IPs in ping_result_file; will loop
+    #through file {count} times, meaning each IP pinged {count} times; timeout is 1 second;
+    #fping sends results to stderr
+    ping_results = Popen("fping -i %d -c %d -q -f %s" % (interval, count, ping_result_file),
+                         shell=True, stdin=PIPE, stdout=PIPE, stderr=STDOUT,
+                         close_fds=True).stdout.read().decode("utf-8")
 
     #The analysis - go through the ping results
     file_results = ""

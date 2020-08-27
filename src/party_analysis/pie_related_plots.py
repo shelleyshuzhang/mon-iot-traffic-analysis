@@ -42,7 +42,7 @@ def pie_plot_percentage(party_dict: dict, title, save_name, name_dict, fig_dpi):
     plt.close()
 
 
-def plot_traffic_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot: list,
+def plot_dst(party_hosts_traffic: dict, title, save_name, party_bar_plot: list,
                      name_dict, third_party_color: list, host_name_too_long, fig_dpi,
                      empty_parties, patch_dict):
     party_hosts_traffic = copy.deepcopy(party_hosts_traffic)

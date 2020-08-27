@@ -20,6 +20,8 @@ def read_prot_port_info(info):
     return prot_info
 
 
+#constructs DestinationPros from an output CSV
+#useful for generating plots without having to rerun analyses
 def load(script_dir, out_csv_path):
     print("Loading results from %s..." % out_csv_path)
     prot_enc_dict = {"encrypted": "1", "unencrypted": "0", "unknown": "-1"}
@@ -43,10 +45,13 @@ def load(script_dir, out_csv_path):
             enc = row[11]
 
             dst = Destination.Destination(ip, host, party, host_full, country, org)
-            
-            prot_info = prots_info[prot_port.upper()]
-            prot = ProtocolPort.ProtocolPort(prot_port, prot_enc_dict[enc.lower()],
-                                                  prot_info[0], prot_info[1], prot_info[2])
+           
+            try:
+                prot_info = prots_info[prot_port.upper()]
+                prot = ProtocolPort.ProtocolPort(prot_port, prot_enc_dict[enc.lower()],
+                                                 prot_info[0], prot_info[1], prot_info[2])
+            except KeyError:
+                prot = ProtocolPort.ProtocolPort(prot_port, '-1', '-1', '-1', '-1')
 
             dp = DestinationPro.DestinationPro(dst, prot)
             dp.add_all(int(bytes_snd), int(bytes_rcv), int(pckt_snd), int(pckt_rcv))

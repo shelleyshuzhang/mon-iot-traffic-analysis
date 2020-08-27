@@ -59,20 +59,18 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
         non_data1 = party_t_dict["0"].__len__() == 0
         non_data2 = party_t_dict["-1"].__len__() == 0
         if not non_data1 or not non_data2:
-            prp.plot_traffic_dst(party_hosts_traffic=party_t_dict,
-                                 party_bar_plot=[protocol_bar_dict["0"], protocol_bar_dict["-1"]],
-                                 save_name=pie_fig_dir + "/" + company + "_pie_"
-                                           + dst_type_name + "_encryption_traffic.png",
-                                 title="The amount of encrypted and unencrypted traffic "
-                                       "sent to each destination " + dst_type_name
-                                       + " and protocol&port"
-                                       + " (" + company.capitalize() + " device)",
-                                 name_dict=protocol_encrypted_dict,
-                                 third_party_color=[protocol_color_dict["0"],
-                                                    protocol_color_dict["-1"]],
-                                 host_name_too_long=protocol_name_too_long,
-                                 empty_parties=[non_data1, non_data2],
-                                 fig_dpi=pie_fig_dpi, patch_dict=patch_dict)
+            prp.plot_dst(party_hosts_traffic=party_t_dict,
+                         party_bar_plot=[protocol_bar_dict["0"], protocol_bar_dict["-1"]],
+                         save_name=pie_fig_dir + "/" + company + "_pie_" + dst_type_name
+                                   + "_encryption_traffic.png",
+                         title="The amount of encrypted and unencrypted traffic sent to each"
+                               + "destination " + dst_type_name + " and protocol&port ("
+                               + company.capitalize() + " device)",
+                         name_dict=protocol_encrypted_dict,
+                         third_party_color=[protocol_color_dict["0"], protocol_color_dict["-1"]],
+                         host_name_too_long=protocol_name_too_long, 
+                         empty_parties=[non_data1, non_data2],
+                         fig_dpi=pie_fig_dpi, patch_dict=patch_dict)
 
     def make_bar_h_plot(party_t_dict, dst_type_name, barh_fig_dpi, barh_fig_dir):
         barh_fig_dir = vsp.check_dir_exist(barh_fig_dir, "barH")
@@ -105,23 +103,20 @@ def calc_encrypted_dst_pct(previous_data: list, company: str, fig_dir: str, fig_
     def make_plot(input_plot_type: str, input_dst_type: str, fig_dpi: int):
         if input_plot_type == "pieplot":
             if input_dst_type == "sld":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=traffic_encryption_dst,
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=traffic_encryption_dst,
                               pie_fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=traffic_encryption_fqdn,
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=traffic_encryption_fqdn,
                               pie_fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=traffic_encryption_org,
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=traffic_encryption_org,
                               pie_fig_dpi=fig_dpi, pie_fig_dir=fig_dir)
 
         elif input_plot_type == "barhplot":
             if input_dst_type == "sld":
-                make_bar_h_plot(party_t_dict=party_dict_unencrypted_sld,
+                make_bar_h_plot(party_t_dict=party_dict_unencrypted_sld, 
                                 dst_type_name=input_dst_type,
                                 barh_fig_dpi=fig_dpi, barh_fig_dir=fig_dir)
 

@@ -27,8 +27,7 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
     abroad_all_info_fqdn, \
     abroad_all_info_org = read_dst_countries(previous_data)
 
-    fig_dir = vsp.check_dir_exist(ori_path=fig_dir,
-                                  new_dir="country_analysis")
+    fig_dir = vsp.check_dir_exist(ori_path=fig_dir, new_dir="country_analysis")
 
     def make_pie_plot(dst_type_name, party_t_dict, pie_plot_dpi, pie_fig_dir):
         pie_fig_dir = vsp.check_dir_exist(pie_fig_dir, "pie")
@@ -38,20 +37,16 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
         non_data1 = party_t_dict["1"].__len__() == 0
         non_data2 = party_t_dict["-1"].__len__() == 0
         if not non_data1 or not non_data2:
-            prp.plot_traffic_dst(party_hosts_traffic=party_t_dict,
-                                 party_bar_plot=["1", "2"],
-                                 save_name=pie_fig_dir + "/" + company + "_pie_"
-                                           + dst_type_name + "_abroad_traffic.png",
-                                 title='The amount of traffic sent to each '
-                                       'destination ' + dst_type_name +
-                                       ' in the USA and abroad (' + company.capitalize() +
-                                       ' device)',
-                                 name_dict=country_name_dict,
-                                 third_party_color=[country_color_dict["1"],
-                                                    country_color_dict["-1"]],
-                                 host_name_too_long=country_name_too_long,
-                                 empty_parties=[non_data1, non_data2],
-                                 fig_dpi=pie_plot_dpi, patch_dict=patch_dict)
+            prp.plot_dst(party_hosts_traffic=party_t_dict, party_bar_plot=["1", "2"],
+                         save_name=pie_fig_dir + "/" + company + "_pie_"
+                                   + dst_type_name + "_abroad_traffic.png",
+                         title='The amount of traffic sent to each destination ' + dst_type_name
+                               + ' in the USA and abroad (' + company.capitalize() + ' device)',
+                         name_dict=country_name_dict,
+                         third_party_color=[country_color_dict["1"], country_color_dict["-1"]],
+                         host_name_too_long=country_name_too_long,
+                         empty_parties=[non_data1, non_data2],
+                         fig_dpi=pie_plot_dpi, patch_dict=patch_dict)
 
     def make_bar_h_plot(party_t_dict, dst_type_name, fig_dpi, barh_fig_dir):
         barh_fig_dir = vsp.check_dir_exist(barh_fig_dir, "barH")
@@ -84,34 +79,28 @@ def run(previous_data: list, company: str, fig_dir: str, fig_dpi: int,
     def make_plot(input_plot_type: str, input_dst_type: str, all_plot_dpi: int):
         if input_plot_type == "pieplot":
             if input_dst_type == "sld":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=country_info_sld,
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=country_info_sld,
                               pie_plot_dpi=all_plot_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=country_info_fqdn,
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=country_info_fqdn,
                               pie_plot_dpi=all_plot_dpi, pie_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
-                make_pie_plot(dst_type_name=input_dst_type,
-                              party_t_dict=country_info_org,
+                make_pie_plot(dst_type_name=input_dst_type, party_t_dict=country_info_org,
                               pie_plot_dpi=all_plot_dpi, pie_fig_dir=fig_dir)
 
         elif input_plot_type == "barhplot":
             if input_dst_type == "sld":
-                make_bar_h_plot(party_t_dict=abroad_all_info_sld,
-                                dst_type_name=input_dst_type,
+                make_bar_h_plot(party_t_dict=abroad_all_info_sld, dst_type_name=input_dst_type,
                                 fig_dpi=all_plot_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "fqdn":
-                make_bar_h_plot(party_t_dict=abroad_all_info_fqdn,
-                                dst_type_name=input_dst_type,
+                make_bar_h_plot(party_t_dict=abroad_all_info_fqdn, dst_type_name=input_dst_type,
                                 fig_dpi=all_plot_dpi, barh_fig_dir=fig_dir)
 
             elif input_dst_type == "org":
-                make_bar_h_plot(party_t_dict=abroad_all_info_org,
-                                dst_type_name=input_dst_type,
+                make_bar_h_plot(party_t_dict=abroad_all_info_org, dst_type_name=input_dst_type,
                                 fig_dpi=all_plot_dpi, barh_fig_dir=fig_dir)
 
     if linear:
@@ -172,8 +161,7 @@ def read_dst_countries(result):
         add_to_pie_groups(country_info_fqdn, host_full)
         add_to_pie_groups(country_info_org, org)
 
-        if country != "US" and country != "Local" \
-                and not country.startswith("Unknown"):
+        if country != "US" and country != "Local" and not country.startswith("Unknown"):
             add_to_bar_plot(abroad_all_info_sld, host)
             add_to_bar_plot(abroad_all_info_fqdn, host_full)
             add_to_bar_plot(abroad_all_info_org, org)

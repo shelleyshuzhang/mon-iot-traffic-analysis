@@ -72,6 +72,8 @@ if __name__ == "__main__":
     parser.add_argument("-v", dest="in_csv", default="")
     parser.add_argument("-s", dest="software_location", default="")
     parser.add_argument("-c", dest="company", default="unknown")
+    parser.add_argument("-r", dest="interval", default="25")
+    parser.add_argument("-u", dest="count", default=5)
     parser.add_argument("-t", dest="time_range", default="1")
     parser.add_argument("-f", dest="fig_dir", default="plots")
     parser.add_argument("-o", dest="out_csv", default="results.csv")
@@ -166,6 +168,8 @@ if __name__ == "__main__":
     errors = check_pos(args.time_range, "Time range", False) or errors
     errors = check_pos(args.num_proc, "Number of processes", True) or errors
     errors = check_pos(args.dpi, "DPI", True) or errors
+    errors = check_pos(args.interval, "Ping interval", True) or errors
+    errors = check_pos(args.count, "Number pings", True) or errors
 
     if errors:
         print_usage(1)
@@ -206,7 +210,8 @@ if __name__ == "__main__":
 
         # check if the traffic is sent abroad
         print("Analyzing abroad traffic...")
-        result = abr_ana.ping_ips(result, args.fig_dir, company, c.SCRIPT_DIR)
+        result = abr_ana.ping_ips(result, args.fig_dir, company, c.SCRIPT_DIR,
+                                  int(args.interval), int(args.count))
 
         with open(pkl_name, 'wb') as output:
             pickle.dump(result, output, pickle.HIGHEST_PROTOCOL)
