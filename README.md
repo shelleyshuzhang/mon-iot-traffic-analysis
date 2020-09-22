@@ -4,6 +4,10 @@ This script performs network analysis to classify network traffic of Internet of
 
 For step-by-step instructions on getting started, see the [Getting Started](Getting_Started.md) document.
 
+Contributors: Shu Zhang, Derek Ng
+
+License: [Apache License, version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
 ## Setup
 
 This script uses Python 3.6.
